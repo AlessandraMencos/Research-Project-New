@@ -140,3 +140,4 @@ anova_summary_ldh <- data.frame(
   p_value = anova_pvals
 )
 anova_summary_ldh$significant <- anova_summary_ldh$p_value < 0.05
+
