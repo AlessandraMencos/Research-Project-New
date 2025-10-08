@@ -28,11 +28,22 @@ shapiro_df <- data.frame(
 par(mfrow = c(1,2))
 #vWF
 sledai_vwf <- lm(vwf_iu_dl~sledai_score + age_at_diagnosis_years + 
+<<<<<<< HEAD
                     time_since_diagnosis_years + bmi_kg_m2 + 
                    ifn_type1_iu_ml + menopausal_status,
                  data = OriginalData)
 plot(OriginalData$sledai_score, sledai_vwf[['fitted.values']], main = 'vWF', 
      xlab = 'SLEDAI activity', ylab = 'fitted values')
+=======
+                    time_since_diagnosis_years + age_years + bmi_kg_m2 + 
+                   ifn_type1_iu_ml + menopausal_status,
+                 data = OriginalData)
+summary(sledai_vwf)
+par(mfrow = c(2,2))
+plot(sledai_vwf, main = 'vWF')
+par(mfrow = c(1,2))
+plot(OriginalData$sledai_score, sledai_vwf[['fitted.values']], main = 'vWF')
+>>>>>>> 590da26341c854629634af7ca2d000f5ebcaccb0
 plot(OriginalData$vwf_iu_dl, sledai_vwf$fitted.values, 
      xlab = 'true values', ylab = ' ') +
   abline (b =1, a = 0)
@@ -50,8 +61,16 @@ plot(OriginalData$sdc1_ng_ml, sledai_sdc1$fitted.values,
 sledai_tm <- lm(tm_ng_ml~sledai_score + time_since_diagnosis_years + 
                   age_years + bmi_kg_m2 + ifn_type1_iu_ml +
                   menopausal_status, data = OriginalData)
+<<<<<<< HEAD
 plot(OriginalData$sledai_score, sledai_tm[['fitted.values']], main = 'TM', 
      xlab = 'SLEDAI activity', ylab = 'fitted values')
+=======
+summary(sledai_tm)
+par(mfrow = c(2,2))
+plot(sledai_tm, main = 'TM')
+par(mfrow = c(1,2))
+plot(OriginalData$sledai_score, sledai_tm[['fitted.values']], main = 'TM')
+>>>>>>> 590da26341c854629634af7ca2d000f5ebcaccb0
 plot(OriginalData$tm_ng_ml, sledai_tm$fitted.values, 
      xlab = 'true values', ylab = ' ') +
   abline (b = 1, a = 0)
@@ -69,8 +88,16 @@ plot(OriginalData$ox_ldl_ng_ml, sledai_oxLDL$fitted.values,
 #sVCAM1
 sledai_VCAM1 <- lm(svcam1_ng_ml~sledai_score + age_years + bmi_kg_m2, 
                    data = OriginalData)
+<<<<<<< HEAD
 plot(OriginalData$sledai_score, sledai_VCAM1[['fitted.values']], main = 'sVCAM1',
      xlab = 'SLEDAI activity', ylab = 'fitted values')
+=======
+summary(sledai_VCAM1)
+par(mfrow = c(2,2))
+plot(sledai_VCAM1, main = 'sVCAM')
+par(mfrow = c(1,2))
+plot(OriginalData$sledai_score, sledai_VCAM1[['fitted.values']], main = 'sVCAM1')
+>>>>>>> 590da26341c854629634af7ca2d000f5ebcaccb0
 plot(OriginalData$svcam1_ng_ml, sledai_VCAM1$fitted.values, 
      xlab = 'true values', ylab = ' ') +
   abline (b = 1, a = 0)
@@ -78,15 +105,28 @@ plot(OriginalData$svcam1_ng_ml, sledai_VCAM1$fitted.values,
 #LDH
 sledai_LDH <- lm(ldh_u_l~sledai_score + age_at_diagnosis_years + age_years +
                  + bmi_kg_m2 + ifn_type1_iu_ml + menopausal_status, data = OriginalData)
+<<<<<<< HEAD
 plot(OriginalData$sledai_score, sledai_LDH[['fitted.values']], main = 'LDH', 
      xlab = 'SLEDAI activity', ylab = 'fitted values')
+=======
+summary(sledai_LDH)
+par(mfrow = c(2,2))
+plot(sledai_LDH, main = 'LDH')
+par(mfrow = c(1,2))
+plot(OriginalData$sledai_score, sledai_LDH[['fitted.values']], main = 'LDH')
+>>>>>>> 590da26341c854629634af7ca2d000f5ebcaccb0
 plot(OriginalData$ldh_u_l, sledai_LDH$fitted.values, 
      xlab = 'true values', ylab = ' ') +
   abline (b = 1, a = 0)
 
+<<<<<<< HEAD
 results_biomarkers_sledai <- list(summary(sledai_vwf), summary(sledai_sdc1), 
                                   summary(sledai_tm), summary(sledai_VCAM1), 
                                   summary(sledai_oxLDL), summary(sledai_LDH))
+=======
+results_biomarkers_sledai <- list(sledai_vwf, sledai_sdc1, sledai_tm, sledai_VCAM1, 
+                                  sledai_oxLDL, sledai_LDH)
+>>>>>>> 590da26341c854629634af7ca2d000f5ebcaccb0
 names(results_biomarkers_sledai) <- biomarkers
 rm(sledai_vwf, sledai_sdc1, sledai_tm, sledai_VCAM1, 
    sledai_oxLDL, sledai_LDH)
@@ -114,6 +154,7 @@ plot(OriginalData$opg_pg_ml, sledai_opg$fitted.values,
 
 ##thid question: is OPG related to the biomarkers? 
 #opg and vwf
+<<<<<<< HEAD
 vwf_opg <- lm(opg_pg_ml~vwf_iu_dl + age_at_diagnosis_years + time_since_diagnosis_years
               + menopausal_status, data = OriginalData)
 plot(OriginalData$sledai_score, vwf_opg[['fitted.values']], main = 'vWF', 
@@ -149,20 +190,67 @@ plot(OriginalData$sledai_score, oxldl_opg[['fitted.values']], main = 'ox LDL',
      xlab = 'SLEDAI activity', ylab = 'fitted values')
 plot(OriginalData$opg_pg_ml, oxldl_opg$fitted.values, 
      xlab = 'true values', ylab = ' ') +
+=======
+vwf_opg <- lm(opg_pg_ml~vwf_iu_dl + age_at_diagnosis_years + time_since_diagnosis_years +
+                age_years + menopausal_status, data = OriginalData)
+summary(vwf_opg)
+plot(OriginalData$sledai_score, vwf_opg[['fitted.values']], main = 'OPG')
+plot(OriginalData$opg_pg_ml, vwf_opg$fitted.values, 
+     xlab = 'true values', ylab = 'fitted values') +
+  abline (b = 1, a = 0)
+
+#opg and sdcq1
+sdc1_opg <- lm(opg_pg_ml~sdc1_ng_ml + age_at_diagnosis_years + time_since_diagnosis_years +
+                age_years + ifn_type1_iu_ml + ethnicity + 
+                 menopausal_status, data = OriginalData)
+summary(sdc1_opg)
+plot(OriginalData$sledai_score, sdc1_opg[['fitted.values']], main = 'OPG')
+plot(OriginalData$opg_pg_ml, sdc1_opg$fitted.values, 
+     xlab = 'true values', ylab = 'fitted values') +
+  abline (b = 1, a = 0)
+
+#opg and tm
+tm_opg <- lm(opg_pg_ml~tm_ng_ml + age_at_diagnosis_years + time_since_diagnosis_years +
+               age_years + bmi_kg_m2 + menopausal_status, data = OriginalData)
+summary(tm_opg)
+plot(OriginalData$sledai_score, tm_opg[['fitted.values']], main = 'OPG')
+plot(OriginalData$opg_pg_ml, tm_opg$fitted.values, 
+     xlab = 'true values', ylab = 'fitted values') +
+  abline (b = 1, a = 0)
+
+#opg and ox LDL
+oxldl_opg <- lm(opg_pg_ml~ox_ldl_ng_ml + age_at_diagnosis_years + time_since_diagnosis_years +
+               age_years + bmi_kg_m2 + ifn_type1_iu_ml + menopausal_status, 
+               data = OriginalData)
+summary(oxldl_opg)
+plot(OriginalData$sledai_score, oxldl_opg[['fitted.values']], main = 'OPG')
+plot(OriginalData$opg_pg_ml, oxldl_opg$fitted.values, 
+     xlab = 'true values', ylab = 'fitted values') +
+>>>>>>> 590da26341c854629634af7ca2d000f5ebcaccb0
   abline (b = 1, a = 0)
 
 #opg and svcam1
 svcam1_opg <- lm(opg_pg_ml~svcam1_ng_ml + age_at_diagnosis_years + time_since_diagnosis_years +
+<<<<<<< HEAD
                    menopausal_status, 
                 data = OriginalData)
 plot(OriginalData$sledai_score, svcam1_opg[['fitted.values']], main = 'sVCAM1', 
      xlab = 'SLEDAI activity', ylab = 'fitted values')
 plot(OriginalData$opg_pg_ml,svcam1_opg$fitted.values, 
      xlab = 'true values', ylab = ' ') +
+=======
+                  age_years + menopausal_status, 
+                data = OriginalData)
+summary(svcam1_opg)
+plot(OriginalData$sledai_score, svcam1_opg[['fitted.values']], main = 'OPG')
+plot(OriginalData$opg_pg_ml,svcam1_opg$fitted.values, 
+     xlab = 'true values', ylab = 'fitted values') +
+>>>>>>> 590da26341c854629634af7ca2d000f5ebcaccb0
   abline (b = 1, a = 0)
 
 #opg and ldh
 ldh_opg <- lm(opg_pg_ml~ldh_u_l + age_at_diagnosis_years + time_since_diagnosis_years +
+<<<<<<< HEAD
                 menopausal_status, 
                 data = OriginalData)
 plot(OriginalData$sledai_score, ldh_opg[['fitted.values']], main = 'LDH', 
@@ -178,3 +266,16 @@ names(results_opg_biomarkers) <- biomarkers
 rm(vwf_opg, sdc1_opg, tm_opg, oxldl_opg, svcam1_opg, ldh_opg)
 
 ##end
+=======
+                  age_years + menopausal_status, 
+                data = OriginalData)
+summary(ldh_opg)
+plot(OriginalData$sledai_score, ldh_opg[['fitted.values']], main = 'OPG')
+plot(OriginalData$opg_pg_ml, ldh_opg$fitted.values, 
+     xlab = 'true values', ylab = 'fitted values') +
+  abline (b = 1, a = 0)
+
+results_opg_biomarkers <- list(vwf_opg, sdc1_opg, tm_opg, oxldl_opg, svcam1_opg, ldh_opg)
+names(results_opg_biomarkers) <- biomarkers
+rm(vwf_opg, sdc1_opg, tm_opg, oxldl_opg, svcam1_opg, ldh_opg)
+>>>>>>> 590da26341c854629634af7ca2d000f5ebcaccb0
