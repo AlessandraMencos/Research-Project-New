@@ -2,9 +2,18 @@
 library(tidyr)
 library(readxl)
 library(dplyr)
+library(ggplot2)
 OriginalData <- read_excel("~/BBIM01/Research Project/Research-Project/g1_s1_dataset_v251001.xlsx")
 View(OriginalData)
 ##question 1: is SLEDAI score related to biomarker expression/
+
+counts_sledai <- OriginalData %>% group_by(sledai_score) %>% reframe(count = n())
+bars <- barplot(counts_sledai$count, 
+                names.arg = counts_sledai$sledai_score, axis.lty = 1, 
+                ylim = c(0, 60), main = 'SLEDAI 2k score patient counts')
+text(x = bars, y = counts_sledai$count, labels = counts_sledai$count, pos = 3, 
+     cex = 0.7)
+rm(bars)
 
 OriginalData$sledai_score <- cut(OriginalData$sledai_score, 
                                  breaks = c(-1, 0, 5, 10,30), include.lowest = TRUE, 
@@ -84,7 +93,7 @@ sledai_LDH <- lm(log2(ldh_u_l)~sledai_score + age_at_diagnosis_years + age_years
                    + bmi_kg_m2 + ifn_type1_iu_ml + menopausal_status, data = OriginalData)
 plot(OriginalData$sledai_score, sledai_LDH[['fitted.values']], main = 'LDH', 
      xlab = 'SLEDAI activity', ylab = 'fitted values')
-ggplot(data = OriginalData, aes(ldh_u_l, sledai_opg$fitted.values)) +
+ggplot(data = OriginalData, aes(ldh_u_l, sledai_LDH$fitted.values)) +
   geom_point()+ 
   geom_smooth() +
   labs(x = 'True Values', y = 'Fitted Values', title = 'LDH')

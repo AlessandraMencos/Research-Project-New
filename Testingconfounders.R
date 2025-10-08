@@ -7,7 +7,7 @@ View(OriginalData)
 ##question 1: is SLEDAI score related to biomarker expression/
 
 OriginalData$sledai_score <- cut(OriginalData$sledai_score, 
-                                 breaks = c(0, 1, 5, 10,30), include.lowest = TRUE, 
+                                 breaks = c(-1, 0, 5, 10, 30), include.lowest = TRUE, 
                                  labels = c('no/low activity', 'mild activity', 
                                             'moderate activity', 
                                             'high/very high activity'))
