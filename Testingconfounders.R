@@ -141,3 +141,160 @@ anova_summary_ldh <- data.frame(
 )
 anova_summary_ldh$significant <- anova_summary_ldh$p_value < 0.05
 
+summaries_biomarkerssledai_conf <- list(anova_summary_ldh, 
+                                        anova_summary_sdc1, anova_summary_vwf, 
+                                        anova_summary_oxldl, anova_summary_tm, 
+                                        anova_summary_svcam1)
+names(summaries_biomarkerssledai_conf) <- biomarkers
+rm(anova_summary_ldh, 
+   anova_summary_sdc1, anova_summary_vwf, 
+   anova_summary_oxldl, anova_summary_tm, 
+   anova_summary_svcam1, ldh_sledai, tm_sledai, vwf_sledai, svcam1_sledai, oxldl_sledai, 
+   sdc1_sledai, oxldl_confounding, svcam1_confounding, sdc1_confounding, vwf_confounding, 
+   tm_confounding, ldh_confounding)
+
+#opg and sledai
+opg_sledai <- lm(opg_pg_ml~sledai_score, data = OriginalData)
+summary(opg_sledai)
+opg_confounding <- lapply(confounders, function(col) {
+  fml <- as.formula(paste("opg_pg_ml ~ sledai_score +", col))
+  adjusted <- lm(fml, data = OriginalData)
+  aov_results <- anova(opg_sledai, adjusted)
+  list(model = adjusted, anova = aov_results)
+})
+names(opg_confounding) <- confounders
+
+anova_pvals <- sapply(opg_confounding, function(res) {
+  res$anova[["Pr(>F)"]][2]  # p-value from second row of ANOVA table
+})
+anova_summary_opg <- data.frame(
+  confounder = names(anova_pvals),
+  p_value = anova_pvals
+)
+anova_summary_opg$significant <- anova_summary_opg$p_value < 0.05
+rm(opg_sledai, opg_confounding)
+
+##opg and biomarkers
+#opg and vwf
+opg_vwf <- lm(opg_pg_ml~vwf_iu_dl, data = OriginalData)
+opg_vwf_confounding <- lapply(confounders, function(col) {
+  fml <- as.formula(paste("opg_pg_ml ~ vwf_iu_dl +", col))
+  adjusted <- lm(fml, data = OriginalData)
+  aov_results <- anova(opg_vwf, adjusted)
+  list(model = adjusted, anova = aov_results)
+})
+names(opg_vwf_confounding) <- confounders
+
+anova_pvals <- sapply(opg_vwf_confounding, function(res) {
+  res$anova[["Pr(>F)"]][2]  # p-value from second row of ANOVA table
+})
+anova_summary_opgvwf <- data.frame(
+  confounder = names(anova_pvals),
+  p_value = anova_pvals
+)
+anova_summary_opgvwf$significant <- anova_summary_opgvwf$p_value < 0.05
+
+#opg and sdc1
+opg_sdc1 <- lm(opg_pg_ml~sdc1_ng_ml, data = OriginalData)
+opg_sdc1_confounding <- lapply(confounders, function(col) {
+  fml <- as.formula(paste("opg_pg_ml ~ sdc1_ng_ml +", col))
+  adjusted <- lm(fml, data = OriginalData)
+  aov_results <- anova(opg_sdc1, adjusted)
+  list(model = adjusted, anova = aov_results)
+})
+names(opg_sdc1_confounding) <- confounders
+
+anova_pvals <- sapply(opg_sdc1_confounding, function(res) {
+  res$anova[["Pr(>F)"]][2]  # p-value from second row of ANOVA table
+})
+anova_summary_opgsdc1 <- data.frame(
+  confounder = names(anova_pvals),
+  p_value = anova_pvals
+)
+anova_summary_opgsdc1$significant <- anova_summary_opgsdc1$p_value < 0.05
+
+#opg and tm
+opg_tm <- lm(opg_pg_ml~tm_ng_ml, data = OriginalData)
+opg_tm_confounding <- lapply(confounders, function(col) {
+  fml <- as.formula(paste("opg_pg_ml ~ tm_ng_ml +", col))
+  adjusted <- lm(fml, data = OriginalData)
+  aov_results <- anova(opg_tm, adjusted)
+  list(model = adjusted, anova = aov_results)
+})
+names(opg_tm_confounding) <- confounders
+
+anova_pvals <- sapply(opg_tm_confounding, function(res) {
+  res$anova[["Pr(>F)"]][2]  # p-value from second row of ANOVA table
+})
+anova_summary_opgtm <- data.frame(
+  confounder = names(anova_pvals),
+  p_value = anova_pvals
+)
+anova_summary_opgtm$significant <- anova_summary_opgtm$p_value < 0.05
+
+#opg and ox LDL
+opg_oxLDL <- lm(opg_pg_ml~ox_ldl_ng_ml, data = OriginalData)
+opg_oxLDL_confounding <- lapply(confounders, function(col) {
+  fml <- as.formula(paste("opg_pg_ml ~ ox_ldl_ng_ml +", col))
+  adjusted <- lm(fml, data = OriginalData)
+  aov_results <- anova(opg_oxLDL, adjusted)
+  list(model = adjusted, anova = aov_results)
+})
+names(opg_oxLDL_confounding) <- confounders
+
+anova_pvals <- sapply(opg_oxLDL_confounding, function(res) {
+  res$anova[["Pr(>F)"]][2]  # p-value from second row of ANOVA table
+})
+anova_summary_opgoxLDL <- data.frame(
+  confounder = names(anova_pvals),
+  p_value = anova_pvals
+)
+anova_summary_opgoxLDL$significant <- anova_summary_opgoxLDL$p_value < 0.05
+
+#opg and svcam1
+opg_svcam1 <- lm(opg_pg_ml~svcam1_ng_ml, data = OriginalData)
+opg_svcam1_confounding <- lapply(confounders, function(col) {
+  fml <- as.formula(paste("opg_pg_ml ~ svcam1_ng_ml +", col))
+  adjusted <- lm(fml, data = OriginalData)
+  aov_results <- anova(opg_svcam1, adjusted)
+  list(model = adjusted, anova = aov_results)
+})
+names(opg_svcam1_confounding) <- confounders
+
+anova_pvals <- sapply(opg_svcam1_confounding, function(res) {
+  res$anova[["Pr(>F)"]][2]  # p-value from second row of ANOVA table
+})
+anova_summary_opgsvcam1 <- data.frame(
+  confounder = names(anova_pvals),
+  p_value = anova_pvals
+)
+anova_summary_opgsvcam1$significant <- anova_summary_opgsvcam1$p_value < 0.05
+
+#opg and LDH
+opg_ldh <- lm(opg_pg_ml~ldh_u_l, data = OriginalData)
+opg_ldh_confounding <- lapply(confounders, function(col) {
+  fml <- as.formula(paste("opg_pg_ml ~ ldh_u_l +", col))
+  adjusted <- lm(fml, data = OriginalData)
+  aov_results <- anova(opg_ldh, adjusted)
+  list(model = adjusted, anova = aov_results)
+})
+names(opg_ldh_confounding) <- confounders
+
+anova_pvals <- sapply(opg_ldh_confounding, function(res) {
+  res$anova[["Pr(>F)"]][2]  # p-value from second row of ANOVA table
+})
+anova_summary_opgldh <- data.frame(
+  confounder = names(anova_pvals),
+  p_value = anova_pvals
+)
+anova_summary_opgldh$significant <- anova_summary_opgldh$p_value < 0.05
+
+summaries_opgbiomarkers_conf <- list(anova_summary_opgldh, anova_summary_opgoxLDL, 
+                                     anova_summary_opgsdc1, anova_summary_opgsvcam1,
+                                     anova_summary_opgtm, anova_summary_opgvwf)
+names(summaries_opgbiomarkers_conf) <- biomarkers
+rm(anova_summary_opgldh, anova_summary_opgoxLDL, 
+   anova_summary_opgsdc1, anova_summary_opgsvcam1,
+   anova_summary_opgtm, anova_summary_opgvwf, opg_ldh, opg_oxLDL, opg_sdc1, opg_svcam1, 
+   opg_tm, opg_vwf, opg_ldh_confounding, opg_oxLDL_confounding, opg_sdc1_confounding, 
+   opg_svcam1_confounding, opg_tm_confounding, opg_vwf_confounding, anova_pvals)

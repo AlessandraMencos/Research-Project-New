@@ -25,8 +25,9 @@ shapiro_df <- data.frame(
 
 #vWF
 sledai_vwf <- lm(vwf_iu_dl~sledai_score + age_at_diagnosis_years + 
-                    time_since_diagnosis_years + bmi_kg_m2,
-                  data = OriginalData)
+                    time_since_diagnosis_years + age_years + bmi_kg_m2 + 
+                   ifn_type1_iu_ml + menopausal_status,
+                 data = OriginalData)
 summary(sledai_vwf)
 par(mfrow = c(2,2))
 plot(sledai_vwf, main = 'vWF')
@@ -37,7 +38,7 @@ plot(OriginalData$vwf_iu_dl, sledai_vwf$fitted.values,
   abline (b =1, a = 0)
 
 #sdc1
-sledai_sdc1 <- lm(sdc1_ng_ml~sledai_score + age_at_diagnosis_years + 
+sledai_sdc1 <- lm(sdc1_ng_ml~sledai_score + age_years + 
                     ifn_type1_iu_ml,  data = OriginalData)
 summary(sledai_sdc1)
 par(mfrow = c(2,2))
@@ -49,7 +50,9 @@ plot(OriginalData$sdc1_ng_ml, sledai_sdc1$fitted.values,
   abline (b = 1, a = 0)
 
 #tm
-sledai_tm <- lm(tm_ng_ml~sledai_score + bmi_kg_m2 + ifn_type1_iu_ml, data = OriginalData)
+sledai_tm <- lm(tm_ng_ml~sledai_score + time_since_diagnosis_years + 
+                  age_years + bmi_kg_m2 + ifn_type1_iu_ml +
+                  menopausal_status, data = OriginalData)
 summary(sledai_tm)
 par(mfrow = c(2,2))
 plot(sledai_tm, main = 'TM')
@@ -60,8 +63,8 @@ plot(OriginalData$tm_ng_ml, sledai_tm$fitted.values,
   abline (b = 1, a = 0)
 
 #oxLDL
-sledai_oxLDL <- lm(ox_ldl_ng_ml~sledai_score + 
-                     time_since_diagnosis_years + bmi_kg_m2 + ifn_type1_iu_ml, 
+sledai_oxLDL <- lm(ox_ldl_ng_ml~sledai_score + age_years + 
+                     bmi_kg_m2 + ifn_type1_iu_ml, 
                    data = OriginalData)
 summary(sledai_oxLDL)
 par(mfrow = c(2,2))
@@ -73,7 +76,8 @@ plot(OriginalData$ox_ldl_ng_ml, sledai_oxLDL$fitted.values,
   abline (b = 1, a = 0)
 
 #sVCAM1
-sledai_VCAM1 <- lm(svcam1_ng_ml~sledai_score, data = OriginalData)
+sledai_VCAM1 <- lm(svcam1_ng_ml~sledai_score + age_years + bmi_kg_m2, 
+                   data = OriginalData)
 summary(sledai_VCAM1)
 par(mfrow = c(2,2))
 plot(sledai_VCAM1, main = 'sVCAM')
@@ -84,8 +88,8 @@ plot(OriginalData$svcam1_ng_ml, sledai_VCAM1$fitted.values,
   abline (b = 1, a = 0)
 
 #LDH
-sledai_LDH <- lm(ldh_u_l~sledai_score + age_at_diagnosis_years 
-                 + bmi_kg_m2 + ifn_type1_iu_ml, data = OriginalData)
+sledai_LDH <- lm(ldh_u_l~sledai_score + age_at_diagnosis_years + age_years +
+                 + bmi_kg_m2 + ifn_type1_iu_ml + menopausal_status, data = OriginalData)
 summary(sledai_LDH)
 par(mfrow = c(2,2))
 plot(sledai_LDH, main = 'LDH')
@@ -94,6 +98,12 @@ plot(OriginalData$sledai_score, sledai_LDH[['fitted.values']], main = 'LDH')
 plot(OriginalData$ldh_u_l, sledai_LDH$fitted.values, 
      xlab = 'true values', ylab = 'fitted values') +
   abline (b = 1, a = 0)
+
+results_biomarkers_sledai <- list(sledai_vwf, sledai_sdc1, sledai_tm, sledai_VCAM1, 
+                                  sledai_oxLDL, sledai_LDH)
+names(results_biomarkers_sledai) <- biomarkers
+rm(sledai_vwf, sledai_sdc1, sledai_tm, sledai_VCAM1, 
+   sledai_oxLDL, sledai_LDH)
 
 #based on the results, it seems none of the biomarkers are good predictors 
   #for mild activity, but all of them (sans oxLDL and TM) are good predictors 
@@ -120,4 +130,65 @@ plot(OriginalData$opg_pg_ml, sledai_opg$fitted.values,
      xlab = 'true values', ylab = 'fitted values') +
   abline (b = 1, a = 0)
 
+##thid question: is OPG related to the biomarkers? 
+#opg and vwf
+vwf_opg <- lm(opg_pg_ml~vwf_iu_dl + age_at_diagnosis_years + time_since_diagnosis_years +
+                age_years + menopausal_status, data = OriginalData)
+summary(vwf_opg)
+plot(OriginalData$sledai_score, vwf_opg[['fitted.values']], main = 'OPG')
+plot(OriginalData$opg_pg_ml, vwf_opg$fitted.values, 
+     xlab = 'true values', ylab = 'fitted values') +
+  abline (b = 1, a = 0)
 
+#opg and sdcq1
+sdc1_opg <- lm(opg_pg_ml~sdc1_ng_ml + age_at_diagnosis_years + time_since_diagnosis_years +
+                age_years + ifn_type1_iu_ml + ethnicity + 
+                 menopausal_status, data = OriginalData)
+summary(sdc1_opg)
+plot(OriginalData$sledai_score, sdc1_opg[['fitted.values']], main = 'OPG')
+plot(OriginalData$opg_pg_ml, sdc1_opg$fitted.values, 
+     xlab = 'true values', ylab = 'fitted values') +
+  abline (b = 1, a = 0)
+
+#opg and tm
+tm_opg <- lm(opg_pg_ml~tm_ng_ml + age_at_diagnosis_years + time_since_diagnosis_years +
+               age_years + bmi_kg_m2 + menopausal_status, data = OriginalData)
+summary(tm_opg)
+plot(OriginalData$sledai_score, tm_opg[['fitted.values']], main = 'OPG')
+plot(OriginalData$opg_pg_ml, tm_opg$fitted.values, 
+     xlab = 'true values', ylab = 'fitted values') +
+  abline (b = 1, a = 0)
+
+#opg and ox LDL
+oxldl_opg <- lm(opg_pg_ml~ox_ldl_ng_ml + age_at_diagnosis_years + time_since_diagnosis_years +
+               age_years + bmi_kg_m2 + ifn_type1_iu_ml + menopausal_status, 
+               data = OriginalData)
+summary(oxldl_opg)
+plot(OriginalData$sledai_score, oxldl_opg[['fitted.values']], main = 'OPG')
+plot(OriginalData$opg_pg_ml, oxldl_opg$fitted.values, 
+     xlab = 'true values', ylab = 'fitted values') +
+  abline (b = 1, a = 0)
+
+#opg and svcam1
+svcam1_opg <- lm(opg_pg_ml~svcam1_ng_ml + age_at_diagnosis_years + time_since_diagnosis_years +
+                  age_years + menopausal_status, 
+                data = OriginalData)
+summary(svcam1_opg)
+plot(OriginalData$sledai_score, svcam1_opg[['fitted.values']], main = 'OPG')
+plot(OriginalData$opg_pg_ml,svcam1_opg$fitted.values, 
+     xlab = 'true values', ylab = 'fitted values') +
+  abline (b = 1, a = 0)
+
+#opg and ldh
+ldh_opg <- lm(opg_pg_ml~ldh_u_l + age_at_diagnosis_years + time_since_diagnosis_years +
+                  age_years + menopausal_status, 
+                data = OriginalData)
+summary(ldh_opg)
+plot(OriginalData$sledai_score, ldh_opg[['fitted.values']], main = 'OPG')
+plot(OriginalData$opg_pg_ml, ldh_opg$fitted.values, 
+     xlab = 'true values', ylab = 'fitted values') +
+  abline (b = 1, a = 0)
+
+results_opg_biomarkers <- list(vwf_opg, sdc1_opg, tm_opg, oxldl_opg, svcam1_opg, ldh_opg)
+names(results_opg_biomarkers) <- biomarkers
+rm(vwf_opg, sdc1_opg, tm_opg, oxldl_opg, svcam1_opg, ldh_opg)
