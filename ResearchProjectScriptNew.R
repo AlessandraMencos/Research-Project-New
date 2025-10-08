@@ -176,3 +176,5 @@ results_opg_biomarkers <- list(summary(vwf_opg), summary(sdc1_opg),
                                summary(svcam1_opg), summary(ldh_opg))
 names(results_opg_biomarkers) <- biomarkers
 rm(vwf_opg, sdc1_opg, tm_opg, oxldl_opg, svcam1_opg, ldh_opg)
+
+##end
