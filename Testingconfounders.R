@@ -13,6 +13,7 @@ OriginalData$sledai_score <- cut(OriginalData$sledai_score,
                                             'high/very high activity'))
 OriginalData <- OriginalData %>% mutate(ethnicity = factor(ethnicity))
 OriginalData <- OriginalData %>% mutate(menopausal_status = factor(menopausal_status))
+OriginalData <- OriginalData %>% mutate(time_since_diagnosis_years = time_since_diagnosis_years+1)
 
 #test each confounder with the linear model
 #If the coefficient of disease_activity changes by >10–15%, consider the variable a confounder. 
@@ -21,11 +22,75 @@ biomarkers <- c('vwf_iu_dl', 'sdc1_ng_ml', 'tm_ng_ml', 'ox_ldl_ng_ml', 'svcam1_n
 confounders <- c('age_at_diagnosis_years', 'time_since_diagnosis_years', 'age_years', 
                  'bmi_kg_m2', 'ifn_type1_iu_ml', 'ethnicity', 'menopausal_status')
 
+#I'm gonna check the distribution of the confounders
+shapiro_df_confounders <- data.frame(
+  confounder = confounders,
+  p_value = sapply(confounders, function(col) {
+    if (is.numeric(OriginalData[[col]])) {
+    shapiro.test(OriginalData[[col]])$p.value}
+    else {
+      NA
+    }}), 
+  w_statistic = sapply(confounders, function(col) {
+    if (is.numeric(OriginalData[[col]])) {
+    unname(shapiro.test(OriginalData[[col]])$statistic)}
+    else {
+      NA
+    }}))
+##none of them seem to be normally distributed, check histograms
+histograms_confounders <- lapply(confounders, function(col) {
+  if (is.numeric(OriginalData[[col]])) {
+  print(hist(OriginalData[[col]], data = OriginalData, xlab = col, 
+             main = paste('Distribution of ', col)))}
+  else {
+    NA
+  }
+})
+##they're all pretty heavily shifted to the left, so we'll take the log and check again
+shapiro_df_confounderslog2 <- data.frame(
+  confounder = confounders,
+  p_value = sapply(confounders, function(col) {
+    if (is.numeric(OriginalData[[col]])) {
+      shapiro.test(log2(OriginalData[[col]]))$p.value}
+    else {
+      NA
+    }}), 
+  w_statistic = sapply(confounders, function(col) {
+    if (is.numeric(OriginalData[[col]])) {
+      unname(shapiro.test(log2(OriginalData[[col]]))$statistic)}
+    else {
+      NA
+    }}))
+histograms_confounderslog2 <- lapply(confounders, function(col) {
+  if (is.numeric(OriginalData[[col]])) {
+    print(hist(log2(OriginalData[[col]]), data = OriginalData, xlab = col, 
+               main = paste('Distribution of log ', col)))}
+  else {
+    NA
+  }
+})
+##don't really know to interpret these?? but it seems to have shifted them to 
+  ##normal distribution
+biomarkers_confounders <- c('age_at_diagnosis_years', 'time_since_diagnosis_years', 
+                            'age_years', 'bmi_kg_m2', 'ifn_type1_iu_ml', 'ethnicity', 
+                            'menopausal_status', 'vwf_iu_dl', 'sdc1_ng_ml', 
+                            'tm_ng_ml', 'ox_ldl_ng_ml', 'svcam1_ng_ml', 'ldh_u_l')
+
+for(col in biomarkers_confounders) {
+  if(is.numeric(OriginalData[[col]])) {
+    OriginalData[[col]] <- log2(OriginalData[[col]])
+  }
+}
+
+##we use anova to compare two linear models of differing complexity, so even if 
+  ##we use the original data (not log transformed) we can use anovas. 
+  ##Given that this data has been normalized, we have no trouble using anova as is. 
+
 ##VWF
 vwf_sledai <- lm(vwf_iu_dl~sledai_score, data = OriginalData)
 summary(vwf_sledai)
 vwf_confounding <- lapply(confounders, function(col) {
-  fml <- as.formula(paste("vwf_iu_dl ~ sledai_score +", col))
+  fml <- as.formula(paste("vwf_iu_dl ~ sledai_score + ", col))
   adjusted <- lm(fml, data = OriginalData)
   aov_results <- anova(vwf_sledai, adjusted)
   list(model = adjusted, anova = aov_results)
@@ -283,6 +348,7 @@ names(opg_ldh_confounding) <- confounders
 anova_pvals <- sapply(opg_ldh_confounding, function(res) {
   res$anova[["Pr(>F)"]][2]  # p-value from second row of ANOVA table
 })
+
 anova_summary_opgldh <- data.frame(
   confounder = names(anova_pvals),
   p_value = anova_pvals

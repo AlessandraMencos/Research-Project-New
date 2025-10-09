@@ -24,31 +24,52 @@ summary(OriginalData$sledai_score)
 
 OriginalData <- OriginalData %>% mutate(ethnicity = factor(ethnicity))
 OriginalData <- OriginalData %>% mutate(menopausal_status = factor(menopausal_status))
+OriginalData <- OriginalData %>% mutate(time_since_diagnosis_years = time_since_diagnosis_years+1)
 
-biomarkers <- c('vwf_iu_dl', 'sdc1_ng_ml', 'tm_ng_ml', 'ox_ldl_ng_ml', 'svcam1_ng_ml', 'ldh_u_l')
+biomarkers <- c('vwf_iu_dl', 'sdc1_ng_ml', 'tm_ng_ml', 
+                'ox_ldl_ng_ml', 'svcam1_ng_ml', 'ldh_u_l')
 
-shapiro_df <- data.frame(
+shapiro_df_biomarkers <- data.frame(
   biomarker = biomarkers,
   p_value = sapply(biomarkers, function(col) 
     shapiro.test(OriginalData[[col]])$p.value), 
   w_statistic = sapply(biomarkers, function(col) 
     unname(shapiro.test(OriginalData[[col]])$statistic)))
+##none of the biomarkers have a normal distributions, check for left or right with histograms
+histograms_biomarkers <- lapply(biomarkers, function(col) {
+  print(hist(OriginalData[[col]], data = OriginalData, xlab = col, main = paste('Distribution of ', col)))
+  })
+##all the histograms show that the distribution is ± right shifted, 
+##so we take the log of all the biomarkers to normalize the data and check again
+
+shapiro_df_biomarkers_log2 <- data.frame(
+  biomarker = biomarkers,
+  p_value = sapply(biomarkers, function(col) 
+    shapiro.test(log2(OriginalData[[col]]))$p.value), 
+  w_statistic = sapply(biomarkers, function(col) 
+    unname(shapiro.test(OriginalData[[col]])$statistic)))
+#seems to be normally distributed now
+#check histograms
+histograms_biomarkers_log2 <- lapply(biomarkers, function(col) {
+  print(hist(log2(OriginalData[[col]]), data = OriginalData, xlab = paste('Log ', col), main = paste('Distribution of log', col)))
+})
+##seems about right 
 
 #vWF
-sledai_vwf <- lm(log2(vwf_iu_dl)~sledai_score + age_at_diagnosis_years + 
-                   time_since_diagnosis_years + bmi_kg_m2 + 
-                   ifn_type1_iu_ml + menopausal_status,
+sledai_vwf <- glm(log2(vwf_iu_dl)~sledai_score + log2(age_at_diagnosis_years) + 
+                   log2(time_since_diagnosis_years) + log2(bmi_kg_m2) + 
+                   log2(ifn_type1_iu_ml) + menopausal_status,
                  data = OriginalData)
 plot(OriginalData$sledai_score, sledai_vwf[['fitted.values']], main = 'vWF', 
-     xlab = 'SLEDAI activity', ylab = 'fitted values')
+     xlab = 'SLEDAI activity', ylab = 'fitted values vWF')
 ggplot(data = OriginalData, aes(vwf_iu_dl, sledai_vwf$fitted.values)) +
   geom_point()+ 
   geom_smooth() +
-  labs(x = 'True Values', y = 'Fitted Values', title = 'vWF')
+  labs(x = 'True Values vWF', y = 'Fitted Values vWF', title = 'vWF')
 
 #sdc1
-sledai_sdc1 <- lm(log2(sdc1_ng_ml)~sledai_score + age_years + 
-                    ifn_type1_iu_ml,  data = OriginalData)
+sledai_sdc1 <- glm(log2(sdc1_ng_ml)~sledai_score + log2(age_years) + 
+                    log2(ifn_type1_iu_ml),  data = OriginalData)
 plot(OriginalData$sledai_score, sledai_sdc1[['fitted.values']], main = 'sDC1', 
      xlab = 'SLEDAI activity', ylab = 'fitted values')
 ggplot(data = OriginalData, aes(sdc1_ng_ml, sledai_sdc1$fitted.values)) +
@@ -57,8 +78,8 @@ ggplot(data = OriginalData, aes(sdc1_ng_ml, sledai_sdc1$fitted.values)) +
   labs(x = 'True Values', y = 'Fitted Values', title = 'sDC1')
 
 #tm
-sledai_tm <- lm(log2(tm_ng_ml)~sledai_score + time_since_diagnosis_years + 
-                  age_years + bmi_kg_m2 + ifn_type1_iu_ml +
+sledai_tm <- glm(log2(tm_ng_ml)~sledai_score + log2(time_since_diagnosis_years) + 
+                  log2(age_years) + log2(bmi_kg_m2) + log2(ifn_type1_iu_ml) +
                   menopausal_status, data = OriginalData)
 plot(OriginalData$sledai_score, sledai_tm[['fitted.values']], main = 'TM', 
      xlab = 'SLEDAI activity', ylab = 'fitted values')
@@ -68,8 +89,8 @@ ggplot(data = OriginalData, aes(tm_ng_ml, sledai_tm$fitted.values)) +
   labs(x = 'True Values', y = 'Fitted Values', title = 'TM')
 
 #oxLDL
-sledai_oxLDL <- lm(ox_ldl_ng_ml~sledai_score + age_years + 
-                     bmi_kg_m2 + ifn_type1_iu_ml, 
+sledai_oxLDL <- glm(log2(ox_ldl_ng_ml)~sledai_score + log2(time_since_diagnosis_years) + 
+                     log2(age_years) + log2(bmi_kg_m2), 
                    data = OriginalData)
 plot(OriginalData$sledai_score, sledai_oxLDL[['fitted.values']], main = 'ox LDL',
      xlab = 'SLEDAI activity', ylab = 'fitted values')
@@ -79,7 +100,8 @@ ggplot(data = OriginalData, aes(ox_ldl_ng_ml, sledai_oxLDL$fitted.values)) +
   labs(x = 'True Values', y = 'Fitted Values', title = 'ox LDL')
 
 #sVCAM1
-sledai_VCAM1 <- lm(log2(svcam1_ng_ml)~sledai_score + age_years + bmi_kg_m2, 
+sledai_VCAM1 <- glm(log2(svcam1_ng_ml)~sledai_score + log2(age_years) + log2(bmi_kg_m2) +
+                    log2(ifn_type1_iu_ml) + menopausal_status,
                    data = OriginalData)
 plot(OriginalData$sledai_score, sledai_VCAM1[['fitted.values']], main = 'sVCAM1',
      xlab = 'SLEDAI activity', ylab = 'fitted values')
@@ -89,8 +111,8 @@ ggplot(data = OriginalData, aes(svcam1_ng_ml, sledai_VCAM1$fitted.values)) +
   labs(x = 'True Values', y = 'Fitted Values', title = 's-VCAM1')
 
 #LDH
-sledai_LDH <- lm(log2(ldh_u_l)~sledai_score + age_at_diagnosis_years + age_years +
-                   + bmi_kg_m2 + ifn_type1_iu_ml + menopausal_status, data = OriginalData)
+sledai_LDH <- glm(log2(ldh_u_l)~sledai_score + log2(age_years) +
+                   + log2(bmi_kg_m2) + menopausal_status, data = OriginalData)
 plot(OriginalData$sledai_score, sledai_LDH[['fitted.values']], main = 'LDH', 
      xlab = 'SLEDAI activity', ylab = 'fitted values')
 ggplot(data = OriginalData, aes(ldh_u_l, sledai_LDH$fitted.values)) +
@@ -106,8 +128,8 @@ rm(sledai_vwf, sledai_sdc1, sledai_tm, sledai_VCAM1,
    sledai_oxLDL, sledai_LDH)
 
 #QUESTION 2: is there a relationship between disease activity and OPG levels? 
-
-sledai_opg <- lm(log2(opg_pg_ml)~sledai_score + age_at_diagnosis_years +
+##repear log transformations for these: 
+sledai_opg <- glm(log2(opg_pg_ml)~sledai_score + age_at_diagnosis_years +
                    time_since_diagnosis_years + bmi_kg_m2 +
                    ifn_type1_iu_ml + ethnicity + menopausal_status, 
                  data = OriginalData)
@@ -121,7 +143,7 @@ ggplot(data = OriginalData, aes(opg_pg_ml, sledai_opg$fitted.values)) +
 
 ##thid question: is OPG related to the biomarkers? 
 #opg and vwf
-vwf_opg <- lm(log2(opg_pg_ml)~log2(vwf_iu_dl) + age_at_diagnosis_years + time_since_diagnosis_years
+vwf_opg <- glm(log2(opg_pg_ml)~log2(vwf_iu_dl) + age_at_diagnosis_years + time_since_diagnosis_years
               + menopausal_status, data = OriginalData)
 plot(OriginalData$sledai_score, vwf_opg[['fitted.values']], main = 'vWF', 
      xlab = 'SLEDAI activity', ylab = 'fitted values')
@@ -131,7 +153,7 @@ ggplot(data = OriginalData, aes(vwf_iu_dl, vwf_opg$fitted.values)) +
   labs(x = 'True Values', y = 'Fitted Values', title = 'vWF')
 
 #opg and sdcq1
-sdc1_opg <- lm(log2(opg_pg_ml)~log2(sdc1_ng_ml) + age_at_diagnosis_years + time_since_diagnosis_years
+sdc1_opg <- glm(log2(opg_pg_ml)~log2(sdc1_ng_ml) + age_at_diagnosis_years + time_since_diagnosis_years
                + ifn_type1_iu_ml + ethnicity + 
                  menopausal_status, data = OriginalData)
 plot(OriginalData$sledai_score, sdc1_opg[['fitted.values']], main = 'sDC1', 
@@ -142,7 +164,7 @@ ggplot(data = OriginalData, aes(sdc1_ng_ml, sdc1_opg$fitted.values)) +
   labs(x = 'True Values', y = 'Fitted Values', title = 'sDC1')
 
 #opg and tm
-tm_opg <- lm(log2(opg_pg_ml)~log2(tm_ng_ml) + age_at_diagnosis_years + time_since_diagnosis_years
+tm_opg <- glm(log2(opg_pg_ml)~log2(tm_ng_ml) + age_at_diagnosis_years + time_since_diagnosis_years
              + bmi_kg_m2 + menopausal_status, data = OriginalData)
 plot(OriginalData$sledai_score, tm_opg[['fitted.values']], main = 'TM', 
      xlab = 'SLEDAI activity', ylab = 'fitted values')
@@ -152,7 +174,7 @@ ggplot(data = OriginalData, aes(tm_ng_ml, tm_opg$fitted.values)) +
   labs(x = 'True Values', y = 'Fitted Values', title = 'TM')
 
 #opg and ox LDL
-oxldl_opg <- lm(log2(opg_pg_ml)~log2(ox_ldl_ng_ml) + age_at_diagnosis_years + time_since_diagnosis_years 
+oxldl_opg <- glm(log2(opg_pg_ml)~log2(ox_ldl_ng_ml) + age_at_diagnosis_years + time_since_diagnosis_years 
                 + bmi_kg_m2 + ifn_type1_iu_ml + menopausal_status, 
                 data = OriginalData)
 plot(OriginalData$sledai_score, oxldl_opg[['fitted.values']], main = 'ox LDL', 
@@ -163,7 +185,7 @@ ggplot(data = OriginalData, aes(ox_ldl_ng_ml, oxldl_opg$fitted.values)) +
   labs(x = 'True Values', y = 'Fitted Values', title = 'ox LDL')
 
 #opg and svcam1
-svcam1_opg <- lm(log2(opg_pg_ml)~log2(svcam1_ng_ml) + age_at_diagnosis_years + time_since_diagnosis_years +
+svcam1_opg <- glm(log2(opg_pg_ml)~log2(svcam1_ng_ml) + age_at_diagnosis_years + time_since_diagnosis_years +
                    menopausal_status, 
                  data = OriginalData)
 plot(OriginalData$sledai_score, svcam1_opg[['fitted.values']], main = 'sVCAM1', 
@@ -174,7 +196,7 @@ ggplot(data = OriginalData, aes(svcam1_ng_ml, svcam1_opg$fitted.values)) +
   labs(x = 'True Values', y = 'Fitted Values', title = 's-VCAM1')
 
 #opg and ldh
-ldh_opg <- lm(log2(opg_pg_ml)~log2(ldh_u_l) + age_at_diagnosis_years + time_since_diagnosis_years +
+ldh_opg <- glm(log2(opg_pg_ml)~log2(ldh_u_l) + age_at_diagnosis_years + time_since_diagnosis_years +
                 menopausal_status, 
               data = OriginalData)
 plot(OriginalData$sledai_score, ldh_opg[['fitted.values']], main = 'LDH', 
