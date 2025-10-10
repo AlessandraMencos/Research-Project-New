@@ -4,7 +4,7 @@ library(readxl)
 library(dplyr)
 library(ggplot2)
 library(EnvStats)
-OriginalData <- read_excel("~/BBIM01/Research Project/Research-Project/g1_s1_dataset_v251001.xlsx")
+OriginalData <- read_excel("~/BBIM01/Research Project/Research-Project/g1_s1_dataset_v251007.xlsx")
 View(OriginalData)
 ##question 1: is SLEDAI score related to biomarker expression/
 
@@ -25,7 +25,6 @@ summary(OriginalData$sledai_score)
 
 OriginalData <- OriginalData %>% mutate(ethnicity = factor(ethnicity))
 OriginalData <- OriginalData %>% mutate(menopausal_status = factor(menopausal_status))
-OriginalData <- OriginalData %>% mutate(time_since_diagnosis_years = time_since_diagnosis_years+1)
 
 biomarkers <- c('vwf_iu_dl', 'sdc1_ng_ml', 'tm_ng_ml', 
                 'ox_ldl_ng_ml', 'svcam1_ng_ml', 'ldh_u_l')

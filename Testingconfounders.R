@@ -2,7 +2,7 @@
 library(tidyr)
 library(readxl)
 library(dplyr)
-OriginalData <- read_excel("~/BBIM01/Research Project/Research-Project/g1_s1_dataset_v251001.xlsx")
+OriginalData <- read_excel("~/BBIM01/Research Project/Research-Project/g1_s1_dataset_v251007.xlsx")
 View(OriginalData)
 ##question 1: is SLEDAI score related to biomarker expression/
 
@@ -13,7 +13,6 @@ OriginalData$sledai_score <- cut(OriginalData$sledai_score,
                                             'high/very high activity'))
 OriginalData <- OriginalData %>% mutate(ethnicity = factor(ethnicity))
 OriginalData <- OriginalData %>% mutate(menopausal_status = factor(menopausal_status))
-OriginalData <- OriginalData %>% mutate(time_since_diagnosis_years = time_since_diagnosis_years+1)
 
 #test each confounder with the linear model
 #If the coefficient of disease_activity changes by >10–15%, consider the variable a confounder. 
