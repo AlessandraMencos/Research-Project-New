@@ -4,6 +4,7 @@ library(readxl)
 library(dplyr)
 OriginalData <- read_excel("~/BBIM01/Research Project/Research-Project/g1_s1_dataset_v251007.xlsx")
 View(OriginalData)
+OriginalData <- OriginalData[OriginalData$age_at_diagnosis_years >=18, ]
 ##question 1: is SLEDAI score related to biomarker expression/
 
 OriginalData$sledai_score <- cut(OriginalData$sledai_score, 
@@ -45,22 +46,24 @@ histograms_confounders <- lapply(confounders, function(col) {
     NA
   }
 })
-##they're all pretty heavily shifted to the left, so we'll take the log and check again
+##they're all pretty heavily shifted to the left, (sans age) so we'll take the log and check again
+confounders_sans_age <- c('age_at_diagnosis_years', 'time_since_diagnosis_years',
+                 'bmi_kg_m2', 'ifn_type1_iu_ml', 'ethnicity', 'menopausal_status')
 shapiro_df_confounderslog2 <- data.frame(
-  confounder = confounders,
-  p_value = sapply(confounders, function(col) {
+  confounder = confounders_sans_age,
+  p_value = sapply(confounders_sans_age, function(col) {
     if (is.numeric(OriginalData[[col]])) {
       shapiro.test(log2(OriginalData[[col]]))$p.value}
     else {
       NA
     }}), 
-  w_statistic = sapply(confounders, function(col) {
+  w_statistic = sapply(confounders_sans_age, function(col) {
     if (is.numeric(OriginalData[[col]])) {
       unname(shapiro.test(log2(OriginalData[[col]]))$statistic)}
     else {
       NA
     }}))
-histograms_confounderslog2 <- lapply(confounders, function(col) {
+histograms_confounderslog2 <- lapply(confounders_sans_age, function(col) {
   if (is.numeric(OriginalData[[col]])) {
     print(hist(log2(OriginalData[[col]]), data = OriginalData, xlab = col, 
                main = paste('Distribution of log ', col)))}
@@ -70,12 +73,12 @@ histograms_confounderslog2 <- lapply(confounders, function(col) {
 })
 ##don't really know to interpret these?? but it seems to have shifted them to 
   ##normal distribution
-biomarkers_confounders <- c('age_at_diagnosis_years', 'time_since_diagnosis_years', 
-                            'age_years', 'bmi_kg_m2', 'ifn_type1_iu_ml', 'ethnicity', 
-                            'menopausal_status', 'vwf_iu_dl', 'sdc1_ng_ml', 
-                            'tm_ng_ml', 'ox_ldl_ng_ml', 'svcam1_ng_ml', 'ldh_u_l')
+biomarkers_confounders_to_log <- c('age_at_diagnosis_years', 'time_since_diagnosis_years',
+                                   'bmi_kg_m2', 'ifn_type1_iu_ml', 'ethnicity',
+                                   'menopausal_status', 'vwf_iu_dl', 'sdc1_ng_ml',
+                                   'tm_ng_ml', 'svcam1_ng_ml', 'ldh_u_l')
 
-for(col in biomarkers_confounders) {
+for(col in biomarkers_confounders_to_log) {
   if(is.numeric(OriginalData[[col]])) {
     OriginalData[[col]] <- log2(OriginalData[[col]])
   }
@@ -86,11 +89,14 @@ for(col in biomarkers_confounders) {
   ##Given that this data has been normalized, we have no trouble using anova as is. 
 
 ##VWF
+par(mfrow = c(2,2))
 vwf_sledai <- lm(vwf_iu_dl~sledai_score, data = OriginalData)
-summary(vwf_sledai)
+plot(vwf_sledai, main = 'vWF unadjusted', which = c(2,4))
+#summary(vwf_sledai)
 vwf_confounding <- lapply(confounders, function(col) {
   fml <- as.formula(paste("vwf_iu_dl ~ sledai_score + ", col))
   adjusted <- lm(fml, data = OriginalData)
+  plot(adjusted, main = paste('vWF', col), which = c(2,4))
   aov_results <- anova(vwf_sledai, adjusted)
   list(model = adjusted, anova = aov_results)
 })
@@ -101,16 +107,17 @@ anova_pvals <- sapply(vwf_confounding, function(res) {
 })
 anova_summary_vwf <- data.frame(
   confounder = names(anova_pvals),
-  p_value = anova_pvals
-)
+  p_value = anova_pvals)
 anova_summary_vwf$significant <- anova_summary_vwf$p_value < 0.05
 
 ##sdc1
 sdc1_sledai <- lm(sdc1_ng_ml~sledai_score, data = OriginalData)
-summary(sdc1_sledai)
+plot(sdc1_sledai, main = 'sDC1 unadjusted', which = c(2,4))
+#summary(sdc1_sledai)
 sdc1_confounding <- lapply(confounders, function(col) {
   fml <- as.formula(paste("sdc1_ng_ml ~ sledai_score +", col))
   adjusted <- lm(fml, data = OriginalData)
+  plot(adjusted, main = paste('sDC1', col), which = c(2,4))
   aov_results <- anova(sdc1_sledai, adjusted)
   list(model = adjusted, anova = aov_results)
 })
@@ -121,16 +128,17 @@ anova_pvals <- sapply(sdc1_confounding, function(res) {
 })
 anova_summary_sdc1 <- data.frame(
   confounder = names(anova_pvals),
-  p_value = anova_pvals
-)
+  p_value = anova_pvals)
 anova_summary_sdc1$significant <- anova_summary_sdc1$p_value < 0.05
 
 #tm
 tm_sledai <- lm(tm_ng_ml~sledai_score, data = OriginalData)
-summary(tm_sledai)
+plot(tm_sledai, main = 'TM unadjusted', which = c(2,4))
+#summary(tm_sledai)
 tm_confounding <- lapply(confounders, function(col) {
   fml <- as.formula(paste("tm_ng_ml ~ sledai_score +", col))
   adjusted <- lm(fml, data = OriginalData)
+  plot(adjusted, main = paste('TM', col), which = c(2,4))
   aov_results <- anova(tm_sledai, adjusted)
   list(model = adjusted, anova = aov_results)
 })
@@ -141,16 +149,17 @@ anova_pvals <- sapply(tm_confounding, function(res) {
 })
 anova_summary_tm <- data.frame(
   confounder = names(anova_pvals),
-  p_value = anova_pvals
-)
+  p_value = anova_pvals)
 anova_summary_tm$significant <- anova_summary_tm$p_value < 0.05
 
 #oxldl
 oxldl_sledai <- lm(ox_ldl_ng_ml~sledai_score, data = OriginalData)
-summary(oxldl_sledai)
+plot(oxldl_sledai, main = 'ox LDL unadjusted', which = c(2,4))
+#summary(oxldl_sledai)
 oxldl_confounding <- lapply(confounders, function(col) {
   fml <- as.formula(paste("ox_ldl_ng_ml ~ sledai_score +", col))
   adjusted <- lm(fml, data = OriginalData)
+  plot(adjusted, main = paste('ox LDL', col), which = c(2,4))
   aov_results <- anova(oxldl_sledai, adjusted)
   list(model = adjusted, anova = aov_results)
 })
@@ -161,16 +170,17 @@ anova_pvals <- sapply(oxldl_confounding, function(res) {
 })
 anova_summary_oxldl <- data.frame(
   confounder = names(anova_pvals),
-  p_value = anova_pvals
-)
+  p_value = anova_pvals)
 anova_summary_oxldl$significant <- anova_summary_oxldl$p_value < 0.05
 
 #svcam1
 svcam1_sledai <- lm(svcam1_ng_ml~sledai_score, data = OriginalData)
-summary(vwf_sledai)
+plot(svcam1_sledai, main = 's-VCAM1 unadjusted', which = c(2,4))
+#summary(svcam1_sledai)
 svcam1_confounding <- lapply(confounders, function(col) {
   fml <- as.formula(paste("svcam1_ng_ml ~ sledai_score +", col))
   adjusted <- lm(fml, data = OriginalData)
+  plot(adjusted, main = paste('sVCAM1', col), which = c(2,4))
   aov_results <- anova(svcam1_sledai, adjusted)
   list(model = adjusted, anova = aov_results)
 })
@@ -181,16 +191,17 @@ anova_pvals <- sapply(svcam1_confounding, function(res) {
 })
 anova_summary_svcam1 <- data.frame(
   confounder = names(anova_pvals),
-  p_value = anova_pvals
-)
+  p_value = anova_pvals)
 anova_summary_svcam1$significant <- anova_summary_svcam1$p_value < 0.05
 
 #ldh
 ldh_sledai <- lm(ldh_u_l~sledai_score, data = OriginalData)
-summary(ldh_sledai)
+plot(ldh_sledai, main = 'LDH unadjusted', which = c(2,4))
+#summary(ldh_sledai)
 ldh_confounding <- lapply(confounders, function(col) {
   fml <- as.formula(paste("ldh_u_l ~ sledai_score +", col))
   adjusted <- lm(fml, data = OriginalData)
+  plot(adjusted, main = paste('LDH', col), which = c(2,4))
   aov_results <- anova(ldh_sledai, adjusted)
   list(model = adjusted, anova = aov_results)
 })
@@ -201,8 +212,7 @@ anova_pvals <- sapply(ldh_confounding, function(res) {
 })
 anova_summary_ldh <- data.frame(
   confounder = names(anova_pvals),
-  p_value = anova_pvals
-)
+  p_value = anova_pvals)
 anova_summary_ldh$significant <- anova_summary_ldh$p_value < 0.05
 
 summaries_biomarkerssledai_conf <- list(anova_summary_ldh, 
