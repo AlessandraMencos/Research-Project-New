@@ -3,28 +3,68 @@ library(tidyr)
 library(readxl)
 library(dplyr)
 library(ggplot2)
-library(EnvStats)
 OriginalData <- read_excel("~/BBIM01/Research Project/Research-Project/g1_s1_dataset_v251007.xlsx")
 View(OriginalData)
 ##question 1: is SLEDAI score related to biomarker expression/
 
-counts_sledai <- OriginalData %>% group_by(sledai_score) %>% reframe(count = n())
-bars <- barplot(counts_sledai$count, 
-                names.arg = counts_sledai$sledai_score, axis.lty = 1, 
-                ylim = c(0, 60), main = 'SLEDAI 2k score patient counts')
-text(x = bars, y = counts_sledai$count, labels = counts_sledai$count, pos = 3, 
-     cex = 0.7)
-rm(bars)
+##remove patients diagnosed before 18 years of age
+OriginalData <- OriginalData[OriginalData$age_at_diagnosis_years >=18, ]
 
+#make the necessary columns into categories
 OriginalData$sledai_score <- cut(OriginalData$sledai_score, 
                                  breaks = c(-1, 0, 5, 10,30), include.lowest = TRUE, 
                                  labels = c('no/low activity', 'mild activity', 
                                             'moderate activity', 
                                             'high/very high activity'))
-summary(OriginalData$sledai_score)
-
 OriginalData <- OriginalData %>% mutate(ethnicity = factor(ethnicity))
 OriginalData <- OriginalData %>% mutate(menopausal_status = factor(menopausal_status))
+
+par(bg = 'beige', font.main = 4, cex.main = 1.5, cex.lab = 1.2, font.lab = 2)
+counts_sledai <- OriginalData %>% group_by(sledai_score) %>% reframe(count = n())
+coul_sledai <- c('pink', 'indianred', 'firebrick', 'firebrick4')
+bars <- barplot(counts_sledai$count, 
+                names.arg = counts_sledai$sledai_score, axis.lty = 1, 
+                ylim = c(0, 90), main = 'SLEDAI 2k score patient counts', col = coul_sledai, 
+                xlab = 'SLEDAI category', ylab = 'Counts')
+text(x = bars, y = counts_sledai$count, labels = counts_sledai$count, pos = 3)
+counts_menopausal <- OriginalData %>% group_by(menopausal_status) %>% reframe(count = n())
+coul_menopausal <- c('seagreen', 'palegreen4')
+bars <- barplot(counts_menopausal$count, 
+                names.arg = counts_menopausal$menopausal_status, axis.lty = 1, 
+                ylim = c(0, 110), main = 'Menopausal Status counts', col = coul_menopausal, 
+                xlab = 'Menopausal Status', ylab = 'Counts')
+text(x = bars, y = counts_menopausal$count, labels = counts_menopausal$count, pos = 3)
+counts_ethnicity <- OriginalData %>% group_by(ethnicity) %>% reframe(count = n())
+coul_ethnicity <- c('lightskyblue', 'lightskyblue4')
+bars <- barplot(counts_ethnicity$count, 
+                names.arg = counts_ethnicity$ethnicity, axis.lty = 1, 
+                ylim = c(0, 180), main = 'Ethnicity Counts', col = coul_ethnicity,
+                xlab = 'Ethnicity', ylab = 'Counts')
+text(x = bars, y = counts_ethnicity$count, labels = counts_ethnicity$count, pos = 3)
+#rm(bars, coul_ethnicity, coul_menopausal, coul_sledai) 
+
+#now, percentages: 
+percentage_sledai <- ((counts_sledai$count/181)*100) %>% data.frame()
+bar_percent_sledai <- barplot(percentage_sledai$., ylim = c(0, 100), 
+                              names.arg = counts_sledai$sledai_score, 
+                              main = 'Percentage of patients in each group', axis.lty = 1, 
+                              col = coul_sledai, xlab = 'SLEDAI category', ylab = 'Percent (%)')
+text(x = bar_percent_sledai, y = percentage_sledai$., 
+     labels = paste0(round(percentage_sledai$., 2), '%'), pos = 3)
+percentage_menopause <- ((counts_menopausal$count/181)*100) %>% data.frame()
+bar_percent_menopause <- barplot(percentage_menopause$., ylim = c(0, 100), 
+                              names.arg = counts_menopausal$menopausal_status, 
+                              main = 'Percentage of patients in each group', axis.lty = 1, 
+                              col = coul_menopausal, xlab = 'Menopausal Status', ylab = 'Percent (%)')
+text(x = bar_percent_menopause, y = percentage_menopause$., 
+     labels = paste0(round(percentage_menopause$., 2), '%'), pos = 3)
+percentage_ethnicity <- ((counts_ethnicity$count/181)*100) %>% data.frame()
+bar_percent_ethnicity <- barplot(percentage_ethnicity$., ylim = c(0, 100), 
+                              names.arg = counts_ethnicity$ethnicity,
+                              main = 'Percentage of patients in each group', axis.lty = 1, 
+                              col = coul_ethnicity, xlab = 'Ethnicity', ylab = 'Percent (%)')
+text(x = bar_percent_ethnicity, y = percentage_ethnicity$., 
+     labels = paste0(round(percentage_ethnicity$., 2), '%'), pos = 3)
 
 biomarkers <- c('vwf_iu_dl', 'sdc1_ng_ml', 'tm_ng_ml', 
                 'ox_ldl_ng_ml', 'svcam1_ng_ml', 'ldh_u_l')
