@@ -5,7 +5,6 @@ library(dplyr)
 library(ggplot2)
 OriginalData <- read_excel("~/BBIM01/Research Project/Research-Project/g1_s1_dataset_v251007.xlsx")
 View(OriginalData)
-##question 1: is SLEDAI score related to biomarker expression/
 
 ##remove patients diagnosed before 18 years of age
 OriginalData <- OriginalData[OriginalData$age_at_diagnosis_years >=18, ]
@@ -41,8 +40,6 @@ bars <- barplot(counts_ethnicity$count,
                 ylim = c(0, 180), main = 'Ethnicity Counts', col = coul_ethnicity,
                 xlab = 'Ethnicity', ylab = 'Counts')
 text(x = bars, y = counts_ethnicity$count, labels = counts_ethnicity$count, pos = 3)
-#rm(bars, coul_ethnicity, coul_menopausal, coul_sledai) 
-
 #now, percentages: 
 percentage_sledai <- ((counts_sledai$count/181)*100) %>% data.frame()
 bar_percent_sledai <- barplot(percentage_sledai$., ylim = c(0, 100), 
@@ -66,6 +63,17 @@ bar_percent_ethnicity <- barplot(percentage_ethnicity$., ylim = c(0, 100),
 text(x = bar_percent_ethnicity, y = percentage_ethnicity$., 
      labels = paste0(round(percentage_ethnicity$., 2), '%'), pos = 3)
 
+to_export <- list(percentage_ethnicity, counts_ethnicity, percentage_menopause, 
+                  counts_menopausal, percentage_sledai, counts_sledai)
+names(to_export) <- c('% Ethnicity', 'Counts Ethnicity', '% Menopausal Status', 
+                      'Counts Menopausal Status', '% SLEDAI category', 
+                      'Counts SLEDAI category')
+write_xlsx(to_export, path = "/Users/alessandramencos/BBIM01/Research Project/Researchprojectdata.xlsx")
+rm(percentage_ethnicity, percentage_menopause, percentage_sledai, counts_ethnicity, 
+   counts_menopausal, counts_sledai, bars, coul_ethnicity, coul_menopausal, coul_sledai, 
+   bar_percent_ethnicity, bar_percent_menopause, bar_percent_sledai, to_export)
+
+print("question 1: is SLEDAI score related to biomarker expression?")
 biomarkers <- c('vwf_iu_dl', 'sdc1_ng_ml', 'tm_ng_ml', 
                 'ox_ldl_ng_ml', 'svcam1_ng_ml', 'ldh_u_l')
 
@@ -80,19 +88,21 @@ histograms_biomarkers <- lapply(biomarkers, function(col) {
   print(hist(OriginalData[[col]], data = OriginalData, xlab = col, 
              main = paste('Distribution of ', col)))
   })
-##all the histograms show that the distribution is ± right shifted, 
-##so we take the log of all the biomarkers to normalize the data and check again
-
+##most of the histograms show that the distribution is ± left shifted, 
+##so we take the log of the biomarkers (sans OX LDL) to normalize the data and check again
+biomarkers_sans_oxldl <- c('vwf_iu_dl', 'sdc1_ng_ml', 'tm_ng_ml', 
+                           'svcam1_ng_ml', 'ldh_u_l')
 shapiro_df_biomarkers_log2 <- data.frame(
-  biomarker = biomarkers,
-  p_value = sapply(biomarkers, function(col) 
+  biomarker = biomarkers_sans_oxldl,
+  p_value = sapply(biomarkers_sans_oxldl, function(col) 
     shapiro.test(log2(OriginalData[[col]]))$p.value), 
-  w_statistic = sapply(biomarkers, function(col) 
+  w_statistic = sapply(biomarkers_sans_oxldl, function(col) 
     unname(shapiro.test(OriginalData[[col]])$statistic)))
 #seems to be normally distributed now
 #check histograms
-histograms_biomarkers_log2 <- lapply(biomarkers, function(col) {
-  print(hist(log2(OriginalData[[col]]), data = OriginalData, xlab = paste('Log ', col), main = paste('Distribution of log', col)))
+histograms_biomarkers_log2 <- lapply(biomarkers_sans_oxldl, function(col) {
+  print(hist(log2(OriginalData[[col]]), data = OriginalData, xlab = paste('Log ', col), 
+             main = paste('Distribution of log', col)))
 })
 ##seems about right 
 
