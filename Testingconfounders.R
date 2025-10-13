@@ -1,7 +1,6 @@
 #Alessandra Mencos
-library(tidyr)
+library(tidyverse)
 library(readxl)
-library(dplyr)
 library(bestNormalize)
 library(writexl)
 OriginalData <- read_excel("~/BBIM01/Research Project/Research-Project/g1_s1_dataset_v251007.xlsx")

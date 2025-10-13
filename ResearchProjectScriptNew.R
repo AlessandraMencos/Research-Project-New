@@ -1,8 +1,6 @@
 #Alessandra Mencos
-library(tidyr)
+library(tidyverse)
 library(readxl)
-library(dplyr)
-library(ggplot2)
 library(writexl)
 OriginalData <- read_excel("/Users/alessandramencos/BBIM01/Research Project/OriginalData_norm.xlsx")
 View(OriginalData)
