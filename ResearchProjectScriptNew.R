@@ -365,7 +365,7 @@ ggplot(data = OriginalData, aes(ldh_u_l, ldh_opg$fitted.values)) +
   geom_point(color = 'black', shape = 20)+ 
   geom_smooth(method = glm, color = 'gold4', fill = 'goldenrod1', alpha = 0.5) +
   labs(x = 'LDH levels [U/L]', y = 'OPG levels [pg/mL]', 
-       title = 'Plasma OPG in relation to vWF levels')
+       title = 'Plasma OPG in relation to LDH levels')
 
 par(mfrow = c(2,2))
 plot(vwf_opg, which = c(2, 4), main = 'lm OPG vWF')
