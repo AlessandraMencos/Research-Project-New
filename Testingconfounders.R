@@ -16,6 +16,18 @@ OriginalData$sledai_score <- cut(OriginalData$sledai_score,
 OriginalData <- OriginalData %>% mutate(ethnicity = factor(ethnicity))
 OriginalData <- OriginalData %>% mutate(menopausal_status = factor(menopausal_status))
 
+continuous_variables_names <- c('age_at_diagnosis_years', 'time_since_diagnosis_years', 
+                                'age_years', 'bmi_kg_m2', 'ifn_type1_iu_ml', 'opg_pg_ml', 
+                                'vwf_iu_dl', 'sdc1_ng_ml','tm_ng_ml', 'ox_ldl_ng_ml',
+                                'svcam1_ng_ml', 'ldh_u_l')
+continuous_variables <- data.frame(OriginalData[sapply(OriginalData, is.numeric)])
+IQR_continuous <- sapply(continuous_variables, IQR) %>% data.frame()
+other_info_continuous <- sapply(continuous_variables, summary) %>% t() %>% data.frame()
+IQR_DESCRIPTIVE_CONTINOUS <- c(IQR_continuous, other_info_continuous) %>% data.frame()
+IQR_DESCRIPTIVE_CONTINOUS <- cbind(term = (continuous_variables_names), IQR_DESCRIPTIVE_CONTINOUS)
+colnames(IQR_DESCRIPTIVE_CONTINOUS) <- c('Variable', 'IQR', 'Min', 'Q1', 'Median','Mean', 'Q3', 'Max')
+write_xlsx(IQR_DESCRIPTIVE_CONTINOUS, path = "/Users/alessandramencos/BBIM01/Research Project/Results (xlsx)/Continuous Variables.xlsx")
+
 biomarkers <- c('vwf_iu_dl', 'sdc1_ng_ml', 'tm_ng_ml', 
                 'ox_ldl_ng_ml', 'svcam1_ng_ml', 'ldh_u_l')
 shapiro_opg <- shapiro.test(OriginalData$opg_pg_ml)
@@ -28,28 +40,36 @@ shapiro_df_biomarkers <- data.frame(
   p_value = sapply(biomarkers, function(col) 
     shapiro.test(OriginalData[[col]])$p.value), 
   w_statistic = sapply(biomarkers, function(col) 
-    unname(shapiro.test(OriginalData[[col]])$statistic)))
-##none of the biomarkers have a normal distributions, check for left or right with histograms
+    shapiro.test(OriginalData[[col]])$statistic))
+##most of the biomarkers (sans OXLDL) don't have a normal distributions, 
+  #check for left or right with histograms
 histograms_biomarkers <- lapply(biomarkers, function(col) {
   print(hist(OriginalData[[col]], data = OriginalData, xlab = col, 
              main = paste('Distribution of ', col)))
 })
 ##most of the histograms show that the distribution is ± left shifted, 
-##so we take the log of the biomarkers (sans OX LDL) to normalize the data and check again
+  #so we take the log of the biomarkers (sans OX LDL) to normalize the data and check again
 biomarkers_sans_oxldl <- c('vwf_iu_dl', 'sdc1_ng_ml', 'tm_ng_ml', 
                            'svcam1_ng_ml', 'ldh_u_l')
 shapiro_df_biomarkers_log2 <- data.frame(
   p_value = sapply(biomarkers_sans_oxldl, function(col) 
     shapiro.test(log2(OriginalData[[col]]))$p.value), 
   w_statistic = sapply(biomarkers_sans_oxldl, function(col) 
-    unname(shapiro.test(OriginalData[[col]])$statistic)))
-#seems to be normally distributed now
+    shapiro.test(log2(OriginalData[[col]]))$statistic))
 #check histograms
 histograms_biomarkers_log2 <- lapply(biomarkers_sans_oxldl, function(col) {
-  print(hist(log2(OriginalData[[col]]), data = OriginalData, xlab = paste('Log ', col), 
-             main = paste('Distribution of log', col)))
+  print(hist(log2(OriginalData[[col]]), data = OriginalData, 
+             xlab = paste('Log ', col), main = paste('Distribution of log', col)))
 })
-##seems about right 
+#seems to be normally distributed now: all except vWF
+best_normalization_vWF <- bestNormalize(OriginalData$vwf_iu_dl) %>% print()
+#normalize according to results
+vwf_iu_dl <- arcsinh_x(OriginalData$vwf_iu_dl)
+vwf_shapiro <- shapiro.test(predict(vwf_iu_dl))
+print(hist(predict(vwf_iu_dl)))
+#there really is no significant difference in linearizing log with log(x) or 
+  #arcsinh(x), but I'm still going to linearize it with sin^-1, just to make sure
+  #it's as normal as possible. 
 rm(shapiro_df_biomarkers, histograms_biomarkers)
 
 confounders <- c('age_at_diagnosis_years', 'time_since_diagnosis_years', 'age_years', 
@@ -65,11 +85,11 @@ shapiro_df_confounders <- data.frame(
     }}), 
   w_statistic = sapply(confounders, function(col) {
     if (is.numeric(OriginalData[[col]])) {
-    unname(shapiro.test(OriginalData[[col]])$statistic)}
+      shapiro.test(OriginalData[[col]])$statistic }
     else {
       NA
     }}))
-##none of them seem to be normally distributed, check histograms
+##only age seems to be normally distributed, check histograms
 histograms_confounders <- lapply(confounders, function(col) {
   if (is.numeric(OriginalData[[col]])) {
   print(hist(OriginalData[[col]], data = OriginalData, xlab = col, 
@@ -78,7 +98,8 @@ histograms_confounders <- lapply(confounders, function(col) {
     NA
   }
 })
-##they're all pretty heavily shifted to the left, (sans age) so we'll take the log and check again
+##they're all pretty heavily shifted to the left, (sans age) 
+  #so we'll take the log and check again
 confounders_sans_age <- c('age_at_diagnosis_years', 'time_since_diagnosis_years',
                  'bmi_kg_m2', 'ifn_type1_iu_ml', 'ethnicity', 'menopausal_status')
 shapiro_df_confounderslog2 <- data.frame(
@@ -90,7 +111,7 @@ shapiro_df_confounderslog2 <- data.frame(
     }}), 
   w_statistic = sapply(confounders_sans_age, function(col) {
     if (is.numeric(OriginalData[[col]])) {
-      unname(shapiro.test(log2(OriginalData[[col]]))$statistic)}
+      shapiro.test(log2(OriginalData[[col]]))$statistic}
     else {
       NA
     }}))
@@ -102,26 +123,28 @@ histograms_confounderslog2 <- lapply(confounders_sans_age, function(col) {
     NA
   }
 })
-##it didn't really make them into a normal distribution, so we'll use boxcox (MASS)
-  ## to check if taking the log is really the best thing
-bestNormalization <- lapply(confounders, function(col) {
+##it didn't really make them into a normal distribution, so we'll use bestnormalize
+  #to check if taking the log is really the best thing
+bestNormalization <- lapply(confounders_sans_age, function(col) {
   if(is.numeric(OriginalData[[col]])) {
       bn <- bestNormalize(OriginalData[[col]])}
   else {
     NULL
   }
   })
-names(bestNormalization) <- confounders
-#we'll normalize based on the suggestion: 
-age_norm <- arcsinh_x(OriginalData$age_at_diagnosis_years)
+names(bestNormalization) <- confounders_sans_age
+#we'll normalize based on the suggestion and adjust the original data: 
+age_norm <- boxcox(OriginalData$age_at_diagnosis_years)
 OriginalData$age_at_diagnosis_years <- predict(age_norm)
 time_norm <- orderNorm(OriginalData$time_since_diagnosis_years)
 OriginalData$time_since_diagnosis_years <- predict(time_norm)
-bmi_norm <- arcsinh_x(OriginalData$bmi_kg_m2)
+bmi_norm <- yeojohnson(OriginalData$bmi_kg_m2)
 OriginalData$bmi_kg_m2 <- predict(bmi_norm)
-rm(age_norm, bmi_norm, time_norm)
+OriginalData$vwf_iu_dl <- predict(vwf_iu_dl)
+rm(age_norm, bmi_norm, time_norm, vwf_iu_dl)
+#for those that have to be log transformed, we'll also adjust the data
 biomarkers_confounders_to_log <- c('ifn_type1_iu_ml', 'ethnicity',
-                                   'menopausal_status', 'vwf_iu_dl', 'sdc1_ng_ml',
+                                   'menopausal_status', 'sdc1_ng_ml',
                                    'tm_ng_ml', 'svcam1_ng_ml', 'ldh_u_l')
 
 for(col in biomarkers_confounders_to_log) {
@@ -131,23 +154,25 @@ for(col in biomarkers_confounders_to_log) {
 }
 
 #run the shapiro again
-confounders <- c('age_at_diagnosis_years', 'time_since_diagnosis_years', 'age_years', 
-                 'bmi_kg_m2', 'ifn_type1_iu_ml', 'ethnicity', 'menopausal_status')
-shapiro_df_confounders_norm <- data.frame(
-  p_value = sapply(confounders, function(col) {
+confounders_biomarkers <- c('age_at_diagnosis_years', 'time_since_diagnosis_years', 
+                            'age_years', 'bmi_kg_m2', 'ifn_type1_iu_ml', 'ethnicity', 
+                            'menopausal_status', 'vwf_iu_dl', 'sdc1_ng_ml','tm_ng_ml', 
+                            'ox_ldl_ng_ml', 'svcam1_ng_ml', 'ldh_u_l')
+shapiro_df_norm <- data.frame(
+  p_value = sapply(confounders_biomarkers, function(col) {
     if (is.numeric(OriginalData[[col]])) {
       shapiro.test(OriginalData[[col]])$p.value
     } else {
       NA
     }}),
-  w_statistic = sapply(confounders, function(col) {
+  w_statistic = sapply(confounders_biomarkers, function(col) {
     if (is.numeric(OriginalData[[col]])) {
-      unname(shapiro.test(OriginalData[[col]])$statistic)
+      shapiro.test(OriginalData[[col]])$statistic
     } else {
       NA
     }
   }))
-histograms_confounders_norm <- lapply(confounders, function(col) {
+histograms_norm <- lapply(confounders_biomarkers, function(col) {
   if (is.numeric(OriginalData[[col]])) {
     print(hist(OriginalData[[col]], data = OriginalData, xlab = col, 
                main = paste('Distribution of normalized', col)))}
@@ -155,8 +180,12 @@ histograms_confounders_norm <- lapply(confounders, function(col) {
     NA
   }
 })
+##it seems that age_at_diagnosis_years cannot be fully normalized, 
+  #but we'll use it as it's linearized like all other variables. 
 rm(shapiro_df_confounders, histograms_confounders, histograms_confounderslog2, 
-   shapiro_df_confounderslog2, histograms_confounderslog2)
+   shapiro_df_confounderslog2, histograms_norm, 
+   biomarkers_sans_oxldl, 
+   confounders_sans_age)
 #now that they're normalized the best they can be, we can compare the models. 
 
 ##VWF
@@ -404,20 +433,22 @@ rm(anova_summary_opgldh, anova_summary_opgoxLDL, anova_summary_opgsdc1,
    anova_summary_opgsvcam1, anova_summary_opgtm, anova_summary_opgvwf, 
    opg_ldh, opg_oxLDL, opg_sdc1, opg_svcam1, opg_tm, opg_vwf, opg_ldh_confounding, 
    opg_oxLDL_confounding, opg_sdc1_confounding, opg_svcam1_confounding, 
-   opg_tm_confounding, opg_vwf_confounding, anova_pvals, col, biomarkers, biomarkers_sans_oxldl, 
-   confounders, confounders_sans_age)
+   opg_tm_confounding, opg_vwf_confounding, anova_pvals, col, biomarkers, 
+   confounders)
 
 #now I'm going to export the data frame to make it easier for the actual data analysis
 OriginalData <- read_excel("~/BBIM01/Research Project/Research-Project/g1_s1_dataset_v251007.xlsx")
 View(OriginalData)
 OriginalData <- OriginalData[OriginalData$age_at_diagnosis_years >=18, ]
-age_norm <- arcsinh_x(OriginalData$age_at_diagnosis_years)
+age_norm <- boxcox(OriginalData$age_at_diagnosis_years)
 OriginalData$age_at_diagnosis_years <- predict(age_norm)
 time_norm <- orderNorm(OriginalData$time_since_diagnosis_years)
 OriginalData$time_since_diagnosis_years <- predict(time_norm)
-bmi_norm <- arcsinh_x(OriginalData$bmi_kg_m2)
+bmi_norm <- yeojohnson(OriginalData$bmi_kg_m2)
 OriginalData$bmi_kg_m2 <- predict(bmi_norm)
-rm(age_norm, bmi_norm, time_norm)
+vwf_iu_dl <- arcsinh_x(OriginalData$vwf_iu_dl)
+OriginalData$vwf_iu_dl <- predict(vwf_iu_dl)
+rm(age_norm, bmi_norm, time_norm, vwf_iu_dl)
 for(col in biomarkers_confounders_to_log) {
   if(is.numeric(OriginalData[[col]])) {
     OriginalData[[col]] <- log2(OriginalData[[col]])
