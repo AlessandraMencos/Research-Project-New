@@ -3,7 +3,7 @@ library(tidyverse)
 library(readxl)
 library(bestNormalize)
 library(writexl)
-OriginalData <- read_excel("~/BBIM01/Research Project/Research-Project/g1_s1_dataset_v251007.xlsx")
+OriginalData <- read_excel("/Users/alessandramencos/BBIM01/Research Project/Research-Project-New/g1_s1_dataset_v251007.xlsx")
 View(OriginalData)
 OriginalData <- OriginalData[OriginalData$age_at_diagnosis_years >=18, ]
 ##question 1: is SLEDAI score related to biomarker expression/
