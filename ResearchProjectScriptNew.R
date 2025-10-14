@@ -2,7 +2,7 @@
 library(tidyverse)
 library(readxl)
 library(writexl)
-OriginalData <- read_excel("/Users/alessandramencos/BBIM01/Research Project/OriginalData_norm.xlsx")
+OriginalData <- read_excel("/Users/alessandramencos/BBIM01/Research Project/Research-Project-New/OriginalData_norm.xlsx")
 View(OriginalData)
 sledai_score_discrete <- data.frame(OriginalData$sledai_score)
 #make the necessary columns into categories
@@ -14,8 +14,7 @@ OriginalData$sledai_score <- cut(OriginalData$sledai_score,
 OriginalData <- OriginalData %>% mutate(ethnicity = factor(ethnicity))
 OriginalData <- OriginalData %>% mutate(menopausal_status = factor(menopausal_status))
 
-par(bg = 'beige', font.main = 4, cex.main = 1.5, cex.lab = 1.2, font.lab = 2, 
-    mfrow = c(1,1))
+par(bg = 'white',font.main = 4, cex.main = 1.5, cex.lab = 1.2, font.lab = 2, mfrow = c(1,1))
 counts_sledai <- OriginalData %>% group_by(sledai_score) %>% reframe(count = n())
 coul_sledai <- c('pink', 'indianred', 'firebrick', 'firebrick4')
 bars <- barplot(counts_sledai$count, 
@@ -95,11 +94,10 @@ vwf_discrete_sledai <- glm(vwf_iu_dl~sledai_score_discrete$OriginalData.sledai_s
                              bmi_kg_m2 +ifn_type1_iu_ml + menopausal_status, 
                            data = OriginalData)
 ggplot(data= OriginalData, aes(sledai_score, sledai_vwf[['fitted.values']])) +
-  geom_violin(trim = FALSE, alpha = 0.6, color = 'darkgreen', fill = 'seagreen') +
-  theme(plot.background = element_rect(fill = 'beige'), 
-        panel.background = element_rect(fill = 'white', colour = 'black'), 
+  theme(panel.background = element_rect(fill = 'aliceblue', colour = 'black'), 
         panel.grid.major = element_line(color = 'grey', linetype = 'dotted'), 
         panel.grid.minor = element_line(color = 'grey', linetype = 'dashed')) +
+  geom_violin(trim = FALSE, alpha = 0.6, color = 'darkgreen', fill = 'seagreen') +
   geom_boxplot(alpha = 0.8, width = 0.2) +
   geom_jitter(color = 'black', position=position_jitter(0.16), alpha = 0.9) +
   labs(title = "vWF levels in relation to SLEDAI category", x = 'SLEDAI category', 
@@ -114,15 +112,14 @@ sdc1_discrete_sledai <- glm(sdc1_ng_ml~sledai_score_discrete$OriginalData.sledai
                               bmi_kg_m2 +ifn_type1_iu_ml + menopausal_status, 
                             data = OriginalData)
 ggplot(data= OriginalData, aes(sledai_score, sledai_sdc1[['fitted.values']])) +
-  theme(plot.background = element_rect(fill = 'beige'), 
-        panel.background = element_rect(fill = 'white', colour = 'black'), 
+  theme(panel.background = element_rect(fill = 'aliceblue', colour = 'black'), 
         panel.grid.major = element_line(color = 'grey', linetype = 'dotted'), 
         panel.grid.minor = element_line(color = 'grey', linetype = 'dashed')) +
   geom_violin(trim = FALSE, alpha = 0.6, color = 'blue', fill = 'skyblue') +
   geom_boxplot(alpha = 0.8, width = 0.2) +
   geom_jitter(color = 'black', position=position_jitter(0.16), alpha = 0.9) +
-  labs(title = "sDC1 levels in relation to SLEDAI category", x = 'SLEDAI category', 
-       y = 'sDC1 levels [ng/mL]')
+  labs(title = "SDC-1 levels in relation to SLEDAI category", x = 'SLEDAI category', 
+       y = 'SDC-1 levels [ng/mL]')
 
 #tm
 sledai_tm <- glm(tm_ng_ml~sledai_score +  age_at_diagnosis_years + 
@@ -133,8 +130,7 @@ tm_discrete_sledai <- glm(tm_ng_ml~sledai_score_discrete$OriginalData.sledai_sco
                               bmi_kg_m2 +ifn_type1_iu_ml + menopausal_status, 
                             data = OriginalData)
 ggplot(data= OriginalData, aes(sledai_score, sledai_tm[['fitted.values']])) +
-  theme(plot.background = element_rect(fill = 'beige'), 
-        panel.background = element_rect(fill = 'white', colour = 'black'), 
+  theme(panel.background = element_rect(fill = 'aliceblue', colour = 'black'), 
         panel.grid.major = element_line(color = 'grey', linetype = 'dotted'), 
         panel.grid.minor = element_line(color = 'grey', linetype = 'dashed')) +
   geom_violin(trim = FALSE, alpha = 0.6, color = 'lemonchiffon4', fill = 'lemonchiffon3') +
@@ -152,15 +148,14 @@ oxldl_discrete_sledai <- glm(ox_ldl_ng_ml~sledai_score_discrete$OriginalData.sle
                               bmi_kg_m2 +ifn_type1_iu_ml + menopausal_status, 
                             data = OriginalData)
 ggplot(data= OriginalData, aes(sledai_score, sledai_oxLDL[['fitted.values']])) +
-  theme(plot.background = element_rect(fill = 'beige'), 
-        panel.background = element_rect(fill = 'white', colour = 'black'), 
+  theme(panel.background = element_rect(fill = 'aliceblue', colour = 'black'), 
         panel.grid.major = element_line(color = 'grey', linetype = 'dotted'), 
         panel.grid.minor = element_line(color = 'grey', linetype = 'dashed')) +
   geom_violin(trim = FALSE, alpha = 0.6, color = 'mediumpurple4', fill = 'lavender') +
   geom_boxplot(alpha = 0.8, width = 0.2) +
   geom_jitter(color = 'black', position=position_jitter(0.16), alpha = 0.9) +
-  labs(title = "ox LDL levels in relation to SLEDAI category", x = 'SLEDAI category', 
-       y = 'ox LDL levels [ng/mL]')
+  labs(title = "ox-LDL levels in relation to SLEDAI category", x = 'SLEDAI category', 
+       y = 'ox-LDL levels [ng/mL]')
 
 #sVCAM1
 sledai_VCAM1 <- glm(svcam1_ng_ml~sledai_score + age_at_diagnosis_years + 
@@ -171,15 +166,14 @@ svcam1_discrete_sledai <- glm(svcam1_ng_ml~sledai_score_discrete$OriginalData.sl
                               bmi_kg_m2 +ifn_type1_iu_ml + menopausal_status, 
                             data = OriginalData)
 ggplot(data= OriginalData, aes(sledai_score, sledai_VCAM1[['fitted.values']])) +
-  theme(plot.background = element_rect(fill = 'beige'), 
-        panel.background = element_rect(fill = 'white', colour = 'black'), 
+  theme(panel.background = element_rect(fill = 'aliceblue', colour = 'black'), 
         panel.grid.major = element_line(color = 'grey', linetype = 'dotted'), 
         panel.grid.minor = element_line(color = 'grey', linetype = 'dashed')) +
   geom_violin(trim = FALSE, alpha = 0.6, color = 'indianred4', fill = 'indianred') +
   geom_boxplot(alpha = 0.8, width = 0.2) +
   geom_jitter(color = 'black', position=position_jitter(0.16), alpha = 0.9) +
-  labs(title = "s-VCAM1 levels in relation to SLEDAI category", x = 'SLEDAI category', 
-       y = 's-VCAM1 levels [ng/mL]')
+  labs(title = "sVCAM1 levels in relation to SLEDAI category", x = 'SLEDAI category', 
+       y = 'sVCAM1 levels [ng/mL]')
 
 #LDH
 sledai_LDH <- glm(ldh_u_l~sledai_score + age_at_diagnosis_years + 
@@ -190,29 +184,28 @@ ldh_discrete_sledai <- glm(ldh_u_l~sledai_score_discrete$OriginalData.sledai_sco
                               bmi_kg_m2 +ifn_type1_iu_ml + menopausal_status, 
                             data = OriginalData)
 ggplot(data= OriginalData, aes(sledai_score, sledai_LDH[['fitted.values']])) +
-  theme(plot.background = element_rect(fill = 'beige'), 
-        panel.background = element_rect(fill = 'white', colour = 'black'), 
+  theme(panel.background = element_rect(fill = 'aliceblue', colour = 'black'), 
         panel.grid.major = element_line(color = 'grey', linetype = 'dotted'), 
         panel.grid.minor = element_line(color = 'grey', linetype = 'dashed')) +
   geom_violin(trim = FALSE, alpha = 0.6, color = 'goldenrod4', fill = 'goldenrod') +
   geom_boxplot(alpha = 0.8, width = 0.2) +
   geom_jitter(color = 'black', position=position_jitter(0.16), alpha = 0.9) +
   labs(title = "LDH levels in relation to SLEDAI category", x = 'SLEDAI category', 
-       'LDH levels [U/L]')
+       y = 'LDH levels [U/L]')
 
 par(mfrow = c(2,2))
-plot(sledai_vwf, which = c(2, 4), main = 'glm vWF vs SLEDAI')
-plot(vwf_discrete_sledai, which = c(2,4), main = 'glm vWF vs Discrete SLEDAI')
-plot(sledai_sdc1, which = c(2, 4), main = 'glm sDC1 vs SLEDAI')
-plot(sdc1_discrete_sledai, which = c(2,4), main = 'glm sDC1 vs Discrete SLEDAI')
-plot(sledai_tm, which = c(2, 4), main = 'glm TM vs SLEDAI')
-plot(tm_discrete_sledai, which = c(2,4), main = 'glm TM vs Discrete SLEDAI')
-plot(sledai_VCAM1, which = c(2, 4), main = 'glm s-VCAM1 vs SLEDAI')
-plot(svcam1_discrete_sledai, which = c(2,4), main = 'glm s-VCAM1 vs Discrete SLEDAI')
-plot(sledai_oxLDL, which = c(2, 4), main = 'glm ox LDL vs SLEDAI')
-plot(oxldl_discrete_sledai, which = c(2,4), main = 'glm ox LDL vs Discrete SLEDAI')
-plot(sledai_LDH, which = c(2, 4), main = 'glm LDH vs SLEDAI')
-plot(ldh_discrete_sledai, which = c(2,4), main = 'glm LDH vs Discrete SLEDAI')
+plot(sledai_vwf, which = c(2, 4), main = 'vWF vs SLEDAI')
+plot(vwf_discrete_sledai, which = c(2,4), main = 'vWF vs Discrete SLEDAI')
+plot(sledai_sdc1, which = c(2, 4), main = 'SDC-1 vs SLEDAI')
+plot(sdc1_discrete_sledai, which = c(2,4), main = 'SDC-1 vs Discrete SLEDAI')
+plot(sledai_tm, which = c(2, 4), main = 'TM vs SLEDAI')
+plot(tm_discrete_sledai, which = c(2,4), main = 'TM vs Discrete SLEDAI')
+plot(sledai_VCAM1, which = c(2, 4), main = 'sVCAM1 vs SLEDAI')
+plot(svcam1_discrete_sledai, which = c(2,4), main = 'sVCAM1 vs Discrete SLEDAI')
+plot(sledai_oxLDL, which = c(2, 4), main = 'ox-LDL vs SLEDAI')
+plot(oxldl_discrete_sledai, which = c(2,4), main = 'ox-LDL vs Discrete SLEDAI')
+plot(sledai_LDH, which = c(2, 4), main = 'LDH vs SLEDAI')
+plot(ldh_discrete_sledai, which = c(2,4), main = 'LDH vs Discrete SLEDAI')
 
 res_biomarkers_sledai <- list(sledai_vwf, sledai_sdc1, sledai_tm, sledai_VCAM1, 
                                   sledai_oxLDL, sledai_LDH)
@@ -256,8 +249,7 @@ opg_discrete_sledai <- glm(opg_pg_ml~sledai_score_discrete$OriginalData.sledai_s
                              bmi_kg_m2 +ifn_type1_iu_ml + menopausal_status, 
                            data = OriginalData)
 ggplot(data= OriginalData, aes(sledai_score, sledai_opg[['fitted.values']])) +
-  theme(plot.background = element_rect(fill = 'beige'), 
-        panel.background = element_rect(fill = 'white', colour = 'black'), 
+  theme(panel.background = element_rect(fill = 'aliceblue', colour = 'black'), 
         panel.grid.major = element_line(color = 'grey', linetype = 'dotted'), 
         panel.grid.minor = element_line(color = 'grey', linetype = 'dashed')) +
   geom_violin(trim = FALSE, alpha = 0.6, color = 'chocolate4', fill = 'chocolate') +
@@ -266,7 +258,7 @@ ggplot(data= OriginalData, aes(sledai_score, sledai_opg[['fitted.values']])) +
   labs(title = "OPG levels in relation to SLEDAI category", x = 'SLEDAI category', 
        y = 'OPG levels [pg/mL]')
 par(mfrow = c(1,2))
-plot(sledai_opg, which = c(2,4), main = 'lm OPG vs SLEDAI')
+plot(sledai_opg, which = c(2,4), main = 'OPG vs SLEDAI')
 results_opg_sledai <- list(sledai_opg, opg_discrete_sledai)
 sledai_opg_summaries <- lapply(results_opg_sledai, function(model) {
   df_coef <- as.data.frame(summary(model)$coefficients)
@@ -289,8 +281,7 @@ vwf_opg <- glm(opg_pg_ml~ vwf_iu_dl + age_at_diagnosis_years +
                  time_since_diagnosis_years + bmi_kg_m2 + 
                  ifn_type1_iu_ml + menopausal_status, data = OriginalData)
 ggplot(data = OriginalData, aes(vwf_iu_dl, vwf_opg$fitted.values)) +
-  theme(plot.background = element_rect(fill = 'beige'), 
-        panel.background = element_rect(fill = 'white', colour = 'black'), 
+  theme(panel.background = element_rect(fill = 'aliceblue', colour = 'black'), 
         panel.grid.major = element_line(color = 'grey', linetype = 'dotted'), 
         panel.grid.minor = element_line(color = 'grey', linetype = 'dashed')) +
   geom_point(color = 'black', shape = 20)+ 
@@ -303,63 +294,58 @@ sdc1_opg <- glm(opg_pg_ml~ sdc1_ng_ml + age_at_diagnosis_years +
                   time_since_diagnosis_years + bmi_kg_m2 + 
                   ifn_type1_iu_ml + menopausal_status, data = OriginalData)
 ggplot(data = OriginalData, aes(sdc1_ng_ml, sdc1_opg$fitted.values)) +
-  theme(plot.background = element_rect(fill = 'beige'), 
-        panel.background = element_rect(fill = 'white', colour = 'black'), 
+  theme(panel.background = element_rect(fill = 'aliceblue', colour = 'black'), 
         panel.grid.major = element_line(color = 'grey', linetype = 'dotted'), 
         panel.grid.minor = element_line(color = 'grey', linetype = 'dashed')) +
   geom_point(color = 'black', shape = 20)+ 
   geom_smooth(method = glm, color = 'navyblue', fill = 'cornflowerblue', alpha = 0.5) +
-  labs(x = 'sDC1 levels [ng/mL]', y = 'OPG levels [pg/mL]', 
-       title = 'Plasma OPG levels in relation to sDC1 levels')
+  labs(x = 'SDC-1 levels [ng/mL]', y = 'OPG levels [pg/mL]', 
+       title = 'Plasma OPG levels in relation to SDC-1 levels')
 
 #opg and tm
 tm_opg <- glm(opg_pg_ml~ tm_ng_ml + age_at_diagnosis_years + 
                 time_since_diagnosis_years + bmi_kg_m2 + 
                 ifn_type1_iu_ml + menopausal_status, data = OriginalData)
 ggplot(data = OriginalData, aes(tm_ng_ml, tm_opg$fitted.values)) +
-  theme(plot.background = element_rect(fill = 'beige'), 
-        panel.background = element_rect(fill = 'white', colour = 'black'), 
+  theme(panel.background = element_rect(fill = 'aliceblue', colour = 'black'), 
         panel.grid.major = element_line(color = 'grey', linetype = 'dotted'), 
         panel.grid.minor = element_line(color = 'grey', linetype = 'dashed')) +
   geom_point(color = 'black', shape = 20)+ 
   geom_smooth(method = glm, color = 'bisque3', fill = 'bisque', alpha = 0.5) +
   labs(x = 'TM levels [ng/mL]', y = 'OPG levels [pg/mL]', 
        title = 'Plasma OPG levels in relation to TM levels') 
-#opg and ox LDL
+#opg and ox-LDL
 oxldl_opg <- glm(opg_pg_ml~ ox_ldl_ng_ml + age_at_diagnosis_years + 
                    time_since_diagnosis_years + bmi_kg_m2 + 
                    ifn_type1_iu_ml + menopausal_status, data = OriginalData)
 ggplot(data = OriginalData, aes(ox_ldl_ng_ml, oxldl_opg$fitted.values)) +
-  theme(plot.background = element_rect(fill = 'beige'), 
-        panel.background = element_rect(fill = 'white', colour = 'black'), 
+  theme(panel.background = element_rect(fill = 'aliceblue', colour = 'black'), 
         panel.grid.major = element_line(color = 'grey', linetype = 'dotted'), 
         panel.grid.minor = element_line(color = 'grey', linetype = 'dashed')) +
   geom_point(color = 'black', shape = 20)+ 
   geom_smooth(method = glm, color = 'orchid4', fill = 'plum', alpha = 0.5) +
-  labs(x = 'ox LDL levels [ng/mL]', y = 'OPG levels [pg/mL]', 
-       title = 'Plasma OPG levels in relation to ox LDL levels')
+  labs(x = 'ox-LDL levels [ng/mL]', y = 'OPG levels [pg/mL]', 
+       title = 'Plasma OPG levels in relation to ox-LDL levels')
 
 #opg and svcam1
 svcam1_opg <- glm(opg_pg_ml~ svcam1_ng_ml + age_at_diagnosis_years + 
                     time_since_diagnosis_years + bmi_kg_m2 + 
                     ifn_type1_iu_ml + menopausal_status, data = OriginalData)
 ggplot(data = OriginalData, aes(svcam1_ng_ml, svcam1_opg$fitted.values)) +
-  theme(plot.background = element_rect(fill = 'beige'), 
-        panel.background = element_rect(fill = 'white', colour = 'black'), 
+  theme(panel.background = element_rect(fill = 'aliceblue', colour = 'black'), 
         panel.grid.major = element_line(color = 'grey', linetype = 'dotted'), 
         panel.grid.minor = element_line(color = 'grey', linetype = 'dashed')) +
   geom_point(color = 'black', shape = 20)+ 
   geom_smooth(method = glm, color = 'firebrick4', fill = 'indianred', alpha = 0.5) +
-  labs(x = 's-VCAM1 levels [ng/mL]', y = 'OPG levels [pg/mL]', 
-       title = 'Plasma OPG levels in relation to s-VCAM1 levels')
+  labs(x = 'sVCAM1 levels [ng/mL]', y = 'OPG levels [pg/mL]', 
+       title = 'Plasma OPG levels in relation to sVCAM1 levels')
 
 #opg and ldh
 ldh_opg <- glm(opg_pg_ml~ ldh_u_l + age_at_diagnosis_years + 
                  time_since_diagnosis_years  + bmi_kg_m2 + 
                  ifn_type1_iu_ml + menopausal_status, data = OriginalData)
 ggplot(data = OriginalData, aes(ldh_u_l, ldh_opg$fitted.values)) +
-  theme(plot.background = element_rect(fill = 'beige'), 
-        panel.background = element_rect(fill = 'white', colour = 'black'), 
+  theme(panel.background = element_rect(fill = 'aliceblue', colour = 'black'), 
         panel.grid.major = element_line(color = 'grey', linetype = 'dotted'), 
         panel.grid.minor = element_line(color = 'grey', linetype = 'dashed')) +
   geom_point(color = 'black', shape = 20)+ 
@@ -368,12 +354,12 @@ ggplot(data = OriginalData, aes(ldh_u_l, ldh_opg$fitted.values)) +
        title = 'Plasma OPG in relation to LDH levels')
 
 par(mfrow = c(2,2))
-plot(vwf_opg, which = c(2, 4), main = 'lm OPG vWF')
-plot(sdc1_opg, which = c(2, 4), main = 'lm OPG sDC1')
-plot(tm_opg, which = c(2, 4), main = 'lm OPG TM')
-plot(svcam1_opg, which = c(2, 4), main = 'lm OPG s-VCAM1')
-plot(oxldl_opg, which = c(2, 4), main = 'lm OPG ox LDL')
-plot(ldh_opg, which = c(2, 4), main = 'lm OPG LDH')
+plot(vwf_opg, which = c(2, 4), main = 'OPG vWF')
+plot(sdc1_opg, which = c(2, 4), main = 'OPG SDC-1')
+plot(tm_opg, which = c(2, 4), main = 'OPG TM')
+plot(svcam1_opg, which = c(2, 4), main = 'OPG sVCAM1')
+plot(oxldl_opg, which = c(2, 4), main = 'OPG ox-LDL')
+plot(ldh_opg, which = c(2, 4), main = 'OPG LDH')
 
 res_opg_biomarkers <- list(vwf_opg, sdc1_opg, tm_opg, oxldl_opg, svcam1_opg, ldh_opg)
 names(res_opg_biomarkers) <- biomarkers

@@ -134,7 +134,7 @@ bestNormalization <- lapply(confounders_sans_age, function(col) {
   })
 names(bestNormalization) <- confounders_sans_age
 #we'll normalize based on the suggestion and adjust the original data: 
-age_norm <- boxcox(OriginalData$age_at_diagnosis_years)
+age_norm <- arcsinh_x(OriginalData$age_at_diagnosis_years)
 OriginalData$age_at_diagnosis_years <- predict(age_norm)
 time_norm <- orderNorm(OriginalData$time_since_diagnosis_years)
 OriginalData$time_since_diagnosis_years <- predict(time_norm)
@@ -437,10 +437,10 @@ rm(anova_summary_opgldh, anova_summary_opgoxLDL, anova_summary_opgsdc1,
    confounders)
 
 #now I'm going to export the data frame to make it easier for the actual data analysis
-OriginalData <- read_excel("~/BBIM01/Research Project/Research-Project/g1_s1_dataset_v251007.xlsx")
+OriginalData <- read_excel("/Users/alessandramencos/BBIM01/Research Project/Research-Project-New/g1_s1_dataset_v251007.xlsx")
 View(OriginalData)
 OriginalData <- OriginalData[OriginalData$age_at_diagnosis_years >=18, ]
-age_norm <- boxcox(OriginalData$age_at_diagnosis_years)
+age_norm <- arcsinh_x(OriginalData$age_at_diagnosis_years)
 OriginalData$age_at_diagnosis_years <- predict(age_norm)
 time_norm <- orderNorm(OriginalData$time_since_diagnosis_years)
 OriginalData$time_since_diagnosis_years <- predict(time_norm)
