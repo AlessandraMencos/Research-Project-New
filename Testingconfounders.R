@@ -33,7 +33,7 @@ biomarkers <- c('vwf_iu_dl', 'sdc1_ng_ml', 'tm_ng_ml',
 shapiro_opg <- shapiro.test(OriginalData$opg_pg_ml)
 shapiro_opg <- data.frame(shapiro_opg$p.value, shapiro_opg$statistic)
 colnames(shapiro_opg) <- c('P value', 'W statistic')
-print(hist(OriginalData$opg_pg_ml, main = 'Distribution of OPG'))
+print(hist(OriginalData$opg_pg_ml, main = 'Distribution of OPG', xlab = 'OPG [pg/mL]'))
 ##OPG is normally distributed, leave as is. 
 
 shapiro_df_biomarkers <- data.frame(
@@ -41,6 +41,7 @@ shapiro_df_biomarkers <- data.frame(
     shapiro.test(OriginalData[[col]])$p.value), 
   w_statistic = sapply(biomarkers, function(col) 
     shapiro.test(OriginalData[[col]])$statistic))
+shapiro_df_biomarkers <- cbind(term = biomarkers, shapiro_df_biomarkers)
 ##most of the biomarkers (sans OXLDL) don't have a normal distributions, 
   #check for left or right with histograms
 histograms_biomarkers <- lapply(biomarkers, function(col) {
@@ -56,6 +57,7 @@ shapiro_df_biomarkers_log2 <- data.frame(
     shapiro.test(log2(OriginalData[[col]]))$p.value), 
   w_statistic = sapply(biomarkers_sans_oxldl, function(col) 
     shapiro.test(log2(OriginalData[[col]]))$statistic))
+shapiro_df_biomarkers_log2 <- cbind(term = biomarkers_sans_oxldl, shapiro_df_biomarkers_log2)
 #check histograms
 histograms_biomarkers_log2 <- lapply(biomarkers_sans_oxldl, function(col) {
   print(hist(log2(OriginalData[[col]]), data = OriginalData, 
@@ -66,11 +68,11 @@ best_normalization_vWF <- bestNormalize(OriginalData$vwf_iu_dl) %>% print()
 #normalize according to results
 vwf_iu_dl <- arcsinh_x(OriginalData$vwf_iu_dl)
 vwf_shapiro <- shapiro.test(predict(vwf_iu_dl))
-print(hist(predict(vwf_iu_dl)))
-#there really is no significant difference in linearizing log with log(x) or 
-  #arcsinh(x), but I'm still going to linearize it with sin^-1, just to make sure
-  #it's as normal as possible. 
-rm(shapiro_df_biomarkers, histograms_biomarkers)
+print(hist(predict(vwf_iu_dl), main = 'Linearized vWF', xlab = 'vWF linearized values'))
+vwf_shapiro <- data.frame(vwf_shapiro$statistic, vwf_shapiro$p.value)
+vwf_shapiro <- cbind('vwf_iu_dl', vwf_shapiro)
+colnames(vwf_shapiro) <- c('Term', 'W', 'P-value')
+rm(histograms_biomarkers)
 
 confounders <- c('age_at_diagnosis_years', 'time_since_diagnosis_years', 'age_years', 
                  'bmi_kg_m2', 'ifn_type1_iu_ml', 'ethnicity', 'menopausal_status')
@@ -89,6 +91,7 @@ shapiro_df_confounders <- data.frame(
     else {
       NA
     }}))
+shapiro_df_confounders <- cbind(term = confounders, shapiro_df_confounders)
 ##only age seems to be normally distributed, check histograms
 histograms_confounders <- lapply(confounders, function(col) {
   if (is.numeric(OriginalData[[col]])) {
@@ -98,6 +101,7 @@ histograms_confounders <- lapply(confounders, function(col) {
     NA
   }
 })
+shapiro_original <- rbind(shapiro_df_biomarkers, shapiro_df_confounders)
 ##they're all pretty heavily shifted to the left, (sans age) 
   #so we'll take the log and check again
 confounders_sans_age <- c('age_at_diagnosis_years', 'time_since_diagnosis_years',
@@ -172,6 +176,7 @@ shapiro_df_norm <- data.frame(
       NA
     }
   }))
+shapiro_df_norm <- cbind(term = confounders_biomarkers, shapiro_df_norm)
 histograms_norm <- lapply(confounders_biomarkers, function(col) {
   if (is.numeric(OriginalData[[col]])) {
     print(hist(OriginalData[[col]], data = OriginalData, xlab = col, 
@@ -180,12 +185,15 @@ histograms_norm <- lapply(confounders_biomarkers, function(col) {
     NA
   }
 })
-##it seems that age_at_diagnosis_years cannot be fully normalized, 
+shapiro_tests <- list(shapiro_original, shapiro_df_norm)
+names(shapiro_tests) <- c('Original', 'Linearized')
+##it seems that age_at_diagnosis_years and vwf cannot be fully normalized, 
   #but we'll use it as it's linearized like all other variables. 
 rm(shapiro_df_confounders, histograms_confounders, histograms_confounderslog2, 
-   shapiro_df_confounderslog2, histograms_norm, 
-   biomarkers_sans_oxldl, 
-   confounders_sans_age)
+   shapiro_df_confounderslog2, histograms_norm, biomarkers_sans_oxldl, 
+   confounders_sans_age, shapiro_df_biomarkers, shapiro_df_biomarkers_log2, vwf_shapiro, 
+   shapiro_df_norm, bestNormalization, shapiro_original, col, biomarkers_confounders_to_log, 
+   best_normalization_vWF, histograms_biomarkers_log2)
 #now that they're normalized the best they can be, we can compare the models. 
 
 ##VWF
@@ -311,10 +319,12 @@ rm(anova_summary_ldh,
 
 #opg and sledai
 opg_sledai <- glm(opg_pg_ml~sledai_score, data = OriginalData)
+plot(opg_sledai, which = c(2, 4), main = 'OPG unadjusted')
 summary(opg_sledai)
 opg_confounding <- lapply(confounders, function(col) {
   fml <- as.formula(paste("opg_pg_ml ~ sledai_score +", col))
   adjusted <- glm(fml, data = OriginalData)
+  plot(adjusted, which = c(2, 4), main = paste('OPG', col))
   aov_results <- anova(opg_sledai, adjusted)
   list(model = adjusted, anova = aov_results)})
 names(opg_confounding) <- confounders
@@ -330,9 +340,11 @@ rm(opg_sledai, opg_confounding)
 ##opg and biomarkers
 #opg and vwf
 opg_vwf <- glm(opg_pg_ml~vwf_iu_dl, data = OriginalData)
+plot(opg_vwf, which = c(2,4), main = 'OPG ~ vWF unadjusted')
 opg_vwf_confounding <- lapply(confounders, function(col) {
   fml <- as.formula(paste("opg_pg_ml ~ vwf_iu_dl +", col))
   adjusted <- glm(fml, data = OriginalData)
+  plot(adjusted, which = c(2,4), main = paste('OPG ~ vWF', col))
   aov_results <- anova(opg_vwf, adjusted)
   list(model = adjusted, anova = aov_results)})
 names(opg_vwf_confounding) <- confounders
@@ -346,9 +358,11 @@ anova_summary_opgvwf$significant <- anova_summary_opgvwf$p_value < 0.05
 
 #opg and sdc1
 opg_sdc1 <- glm(opg_pg_ml~sdc1_ng_ml, data = OriginalData)
+plot(opg_sdc1, which = c(2,4), main = 'OPG ~ SDC-1 unadjusted')
 opg_sdc1_confounding <- lapply(confounders, function(col) {
   fml <- as.formula(paste("opg_pg_ml ~ sdc1_ng_ml +", col))
   adjusted <- glm(fml, data = OriginalData)
+  plot(adjusted, which = c(2,4), main = paste('OPG ~ SDC-1', col))
   aov_results <- anova(opg_sdc1, adjusted)
   list(model = adjusted, anova = aov_results)})
 names(opg_sdc1_confounding) <- confounders
@@ -362,9 +376,11 @@ anova_summary_opgsdc1$significant <- anova_summary_opgsdc1$p_value < 0.05
 
 #opg and tm
 opg_tm <- glm(opg_pg_ml~tm_ng_ml, data = OriginalData)
+plot(opg_sdc1, which = c(2,4), main = 'OPG ~ TM unadjusted')
 opg_tm_confounding <- lapply(confounders, function(col) {
   fml <- as.formula(paste("opg_pg_ml ~ tm_ng_ml +", col))
   adjusted <- glm(fml, data = OriginalData)
+  plot(adjusted, which = c(2,4), main = paste('OPG ~ TM', col))
   aov_results <- anova(opg_tm, adjusted)
   list(model = adjusted, anova = aov_results)})
 names(opg_tm_confounding) <- confounders
@@ -378,9 +394,11 @@ anova_summary_opgtm$significant <- anova_summary_opgtm$p_value < 0.05
 
 #opg and ox LDL
 opg_oxLDL <- glm(opg_pg_ml~ox_ldl_ng_ml, data = OriginalData)
+plot(opg_sdc1, which = c(2,4), main = 'OPG ~ ox-LDL unadjusted')
 opg_oxLDL_confounding <- lapply(confounders, function(col) {
   fml <- as.formula(paste("opg_pg_ml ~ ox_ldl_ng_ml +", col))
   adjusted <- glm(fml, data = OriginalData)
+  plot(adjusted, which = c(2,4), main = paste('OPG ~ ox-LDL', col))
   aov_results <- anova(opg_oxLDL, adjusted)
   list(model = adjusted, anova = aov_results)})
 names(opg_oxLDL_confounding) <- confounders
@@ -394,9 +412,11 @@ anova_summary_opgoxLDL$significant <- anova_summary_opgoxLDL$p_value < 0.05
 
 #opg and svcam1
 opg_svcam1 <- glm(opg_pg_ml~svcam1_ng_ml, data = OriginalData)
+plot(opg_sdc1, which = c(2,4), main = 'OPG ~ sVCAM1 unadjusted')
 opg_svcam1_confounding <- lapply(confounders, function(col) {
   fml <- as.formula(paste("opg_pg_ml ~ svcam1_ng_ml +", col))
   adjusted <- glm(fml, data = OriginalData)
+  plot(adjusted, which = c(2,4), main = paste('OPG ~ sVCMA1', col))
   aov_results <- anova(opg_svcam1, adjusted)
   list(model = adjusted, anova = aov_results)})
 names(opg_svcam1_confounding) <- confounders
@@ -410,9 +430,11 @@ anova_summary_opgsvcam1$significant <- anova_summary_opgsvcam1$p_value < 0.05
 
 #opg and LDH
 opg_ldh <- glm(opg_pg_ml~ldh_u_l, data = OriginalData)
+plot(opg_sdc1, which = c(2,4), main = 'OPG ~ LDH unadjusted')
 opg_ldh_confounding <- lapply(confounders, function(col) {
   fml <- as.formula(paste("opg_pg_ml ~ ldh_u_l +", col))
   adjusted <- glm(fml, data = OriginalData)
+  plot(adjusted, which = c(2,4), main = paste('OPG ~ LDH', col))
   aov_results <- anova(opg_ldh, adjusted)
   list(model = adjusted, anova = aov_results)})
 names(opg_ldh_confounding) <- confounders
