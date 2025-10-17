@@ -14,48 +14,52 @@ OriginalData$sledai_score <- cut(OriginalData$sledai_score,
 OriginalData <- OriginalData %>% mutate(ethnicity = factor(ethnicity))
 OriginalData <- OriginalData %>% mutate(menopausal_status = factor(menopausal_status))
 
-par(bg = 'white',font.main = 4, cex.main = 1.5, cex.lab = 1.2, font.lab = 2, mfrow = c(1,1))
+par(bg = 'white',font.main = 4, cex.main = 1.5, cex.lab = 1.2, font.lab = 2, mfrow = c(1,1),
+    font.sub = 3, cex.sub = 0.8)
 counts_sledai <- OriginalData %>% group_by(sledai_score) %>% reframe(count = n())
 coul_sledai <- c('pink', 'indianred', 'firebrick', 'firebrick4')
 bars <- barplot(counts_sledai$count, 
                 names.arg = counts_sledai$sledai_score, axis.lty = 1, 
                 ylim = c(0, 90), main = 'SLEDAI 2k score patient counts', col = coul_sledai, 
-                xlab = 'SLEDAI category', ylab = 'Counts')
+                xlab = 'SLEDAI category', ylab = 'Counts', sub = 'n = 181')
 text(x = bars, y = counts_sledai$count, labels = counts_sledai$count, pos = 3)
 counts_menopausal <- OriginalData %>% group_by(menopausal_status) %>% reframe(count = n())
 coul_menopausal <- c('seagreen', 'palegreen4')
 bars <- barplot(counts_menopausal$count, 
                 names.arg = counts_menopausal$menopausal_status, axis.lty = 1, 
                 ylim = c(0, 110), main = 'Menopausal Status counts', col = coul_menopausal, 
-                xlab = 'Menopausal Status', ylab = 'Counts')
+                xlab = 'Menopausal Status', ylab = 'Counts', sub = 'n = 181')
 text(x = bars, y = counts_menopausal$count, labels = counts_menopausal$count, pos = 3)
 counts_ethnicity <- OriginalData %>% group_by(ethnicity) %>% reframe(count = n())
 coul_ethnicity <- c('lightskyblue', 'lightskyblue4')
 bars <- barplot(counts_ethnicity$count, 
                 names.arg = counts_ethnicity$ethnicity, axis.lty = 1, 
                 ylim = c(0, 180), main = 'Ethnicity Counts', col = coul_ethnicity,
-                xlab = 'Ethnicity', ylab = 'Counts')
+                xlab = 'Ethnicity', ylab = 'Counts', sub = 'n = 181')
 text(x = bars, y = counts_ethnicity$count, labels = counts_ethnicity$count, pos = 3)
 #now, percentages: 
 percentage_sledai <- ((counts_sledai$count/181)*100) %>% data.frame()
 bar_percent_sledai <- barplot(percentage_sledai$., ylim = c(0, 100), 
                               names.arg = counts_sledai$sledai_score, 
                               main = 'Percentage of patients in each group', axis.lty = 1, 
-                              col = coul_sledai, xlab = 'SLEDAI category', ylab = 'Percent (%)')
+                              col = coul_sledai, xlab = 'SLEDAI category', 
+                              ylab = 'Percent (%)', sub = 'n = 181')
 text(x = bar_percent_sledai, y = percentage_sledai$., 
      labels = paste0(round(percentage_sledai$., 2), '%'), pos = 3)
 percentage_menopause <- ((counts_menopausal$count/181)*100) %>% data.frame()
 bar_percent_menopause <- barplot(percentage_menopause$., ylim = c(0, 100), 
                               names.arg = counts_menopausal$menopausal_status, 
                               main = 'Percentage of patients in each group', axis.lty = 1, 
-                              col = coul_menopausal, xlab = 'Menopausal Status', ylab = 'Percent (%)')
+                              col = coul_menopausal, xlab = 'Menopausal Status', 
+                              ylab = 'Percent (%)', sub = 'n = 181')
 text(x = bar_percent_menopause, y = percentage_menopause$., 
      labels = paste0(round(percentage_menopause$., 2), '%'), pos = 3)
 percentage_ethnicity <- ((counts_ethnicity$count/181)*100) %>% data.frame()
 bar_percent_ethnicity <- barplot(percentage_ethnicity$., ylim = c(0, 100), 
                               names.arg = counts_ethnicity$ethnicity,
                               main = 'Percentage of patients in each group', axis.lty = 1, 
-                              col = coul_ethnicity, xlab = 'Ethnicity', ylab = 'Percent (%)')
+                              col = coul_ethnicity, xlab = 'Ethnicity', 
+                              ylab = 'Percent (%)', sub = 'n = 181')
 text(x = bar_percent_ethnicity, y = percentage_ethnicity$., 
      labels = paste0(round(percentage_ethnicity$., 2), '%'), pos = 3)
 #Descriptive stats of continuous variables
@@ -101,7 +105,7 @@ ggplot(data= OriginalData, aes(sledai_score, sledai_vwf[['fitted.values']])) +
   geom_boxplot(alpha = 0.8, width = 0.2) +
   geom_jitter(color = 'black', position=position_jitter(0.16), alpha = 0.9) +
   labs(title = "vWF levels in relation to SLEDAI category", x = 'SLEDAI category', 
-       y = 'vWF levels [IU/dL]')
+       y = 'vWF levels [IU/dL]', subtitle = 'n = 181')
 
 #sdc1
 sledai_sdc1 <- glm(sdc1_ng_ml~sledai_score + age_at_diagnosis_years + 
@@ -119,7 +123,7 @@ ggplot(data= OriginalData, aes(sledai_score, sledai_sdc1[['fitted.values']])) +
   geom_boxplot(alpha = 0.8, width = 0.2) +
   geom_jitter(color = 'black', position=position_jitter(0.16), alpha = 0.9) +
   labs(title = "SDC-1 levels in relation to SLEDAI category", x = 'SLEDAI category', 
-       y = 'SDC-1 levels [ng/mL]')
+       y = 'SDC-1 levels [ng/mL]', subtitle = 'n = 181')
 
 #tm
 sledai_tm <- glm(tm_ng_ml~sledai_score +  age_at_diagnosis_years + 
@@ -137,7 +141,7 @@ ggplot(data= OriginalData, aes(sledai_score, sledai_tm[['fitted.values']])) +
   geom_boxplot(alpha = 0.8, width = 0.2) +
   geom_jitter(color = 'black', position=position_jitter(0.16), alpha = 0.9) +
   labs(title = "TM levels in relation to SLEDAI category", x = 'SLEDAI category', 
-       y = 'TM levels [ng/mL]')
+       y = 'TM levels [ng/mL]', subtitle = 'n = 181')
 
 #oxLDL
 sledai_oxLDL <- glm(ox_ldl_ng_ml~sledai_score + age_at_diagnosis_years + 
@@ -155,7 +159,7 @@ ggplot(data= OriginalData, aes(sledai_score, sledai_oxLDL[['fitted.values']])) +
   geom_boxplot(alpha = 0.8, width = 0.2) +
   geom_jitter(color = 'black', position=position_jitter(0.16), alpha = 0.9) +
   labs(title = "ox-LDL levels in relation to SLEDAI category", x = 'SLEDAI category', 
-       y = 'ox-LDL levels [ng/mL]')
+       y = 'ox-LDL levels [ng/mL]', subtitle = 'n = 181')
 
 #sVCAM1
 sledai_VCAM1 <- glm(svcam1_ng_ml~sledai_score + age_at_diagnosis_years + 
@@ -173,7 +177,7 @@ ggplot(data= OriginalData, aes(sledai_score, sledai_VCAM1[['fitted.values']])) +
   geom_boxplot(alpha = 0.8, width = 0.2) +
   geom_jitter(color = 'black', position=position_jitter(0.16), alpha = 0.9) +
   labs(title = "sVCAM1 levels in relation to SLEDAI category", x = 'SLEDAI category', 
-       y = 'sVCAM1 levels [ng/mL]')
+       y = 'sVCAM1 levels [ng/mL]', subtitle = 'n = 181')
 
 #LDH
 sledai_LDH <- glm(ldh_u_l~sledai_score + age_at_diagnosis_years + 
@@ -191,7 +195,7 @@ ggplot(data= OriginalData, aes(sledai_score, sledai_LDH[['fitted.values']])) +
   geom_boxplot(alpha = 0.8, width = 0.2) +
   geom_jitter(color = 'black', position=position_jitter(0.16), alpha = 0.9) +
   labs(title = "LDH levels in relation to SLEDAI category", x = 'SLEDAI category', 
-       y = 'LDH levels [U/L]')
+       y = 'LDH levels [U/L]', subtitle = 'n = 181')
 
 par(mfrow = c(2,2))
 plot(sledai_vwf, which = c(2, 4), main = 'vWF vs SLEDAI')
@@ -256,7 +260,7 @@ ggplot(data= OriginalData, aes(sledai_score, sledai_opg[['fitted.values']])) +
   geom_boxplot(alpha = 0.8, width = 0.2) +
   geom_jitter(color = 'black', position=position_jitter(0.16), alpha = 0.9) +
   labs(title = "OPG levels in relation to SLEDAI category", x = 'SLEDAI category', 
-       y = 'OPG levels [pg/mL]')
+       y = 'OPG levels [pg/mL]', subtitle = 'n = 181')
 par(mfrow = c(1,2))
 plot(sledai_opg, which = c(2,4), main = 'OPG vs SLEDAI')
 results_opg_sledai <- list(sledai_opg, opg_discrete_sledai)
@@ -287,7 +291,7 @@ ggplot(data = OriginalData, aes(vwf_iu_dl, vwf_opg$fitted.values)) +
   geom_point(color = 'black', shape = 20)+ 
   geom_smooth(method = glm, color = 'darkolivegreen', fill = 'darkolivegreen2', alpha = 0.5) +
   labs(x = 'vWF levels [IU/dL]', y = 'OPG levels [pg/mL]', 
-       title = 'Plasma OPG levels in relation to vWF levels')
+       title = 'Plasma OPG levels in relation to vWF levels', subtitle = 'n = 181')
 
 #opg and sdc1
 sdc1_opg <- glm(opg_pg_ml~ sdc1_ng_ml + age_at_diagnosis_years + 
@@ -300,7 +304,7 @@ ggplot(data = OriginalData, aes(sdc1_ng_ml, sdc1_opg$fitted.values)) +
   geom_point(color = 'black', shape = 20)+ 
   geom_smooth(method = glm, color = 'navyblue', fill = 'cornflowerblue', alpha = 0.5) +
   labs(x = 'SDC-1 levels [ng/mL]', y = 'OPG levels [pg/mL]', 
-       title = 'Plasma OPG levels in relation to SDC-1 levels')
+       title = 'Plasma OPG levels in relation to SDC-1 levels', subtitle = 'n = 181')
 
 #opg and tm
 tm_opg <- glm(opg_pg_ml~ tm_ng_ml + age_at_diagnosis_years + 
@@ -313,7 +317,7 @@ ggplot(data = OriginalData, aes(tm_ng_ml, tm_opg$fitted.values)) +
   geom_point(color = 'black', shape = 20)+ 
   geom_smooth(method = glm, color = 'bisque3', fill = 'bisque', alpha = 0.5) +
   labs(x = 'TM levels [ng/mL]', y = 'OPG levels [pg/mL]', 
-       title = 'Plasma OPG levels in relation to TM levels') 
+       title = 'Plasma OPG levels in relation to TM levels', subtitle = 'n = 181') 
 #opg and ox-LDL
 oxldl_opg <- glm(opg_pg_ml~ ox_ldl_ng_ml + age_at_diagnosis_years + 
                    time_since_diagnosis_years + bmi_kg_m2 + 
@@ -325,7 +329,7 @@ ggplot(data = OriginalData, aes(ox_ldl_ng_ml, oxldl_opg$fitted.values)) +
   geom_point(color = 'black', shape = 20)+ 
   geom_smooth(method = glm, color = 'orchid4', fill = 'plum', alpha = 0.5) +
   labs(x = 'ox-LDL levels [ng/mL]', y = 'OPG levels [pg/mL]', 
-       title = 'Plasma OPG levels in relation to ox-LDL levels')
+       title = 'Plasma OPG levels in relation to ox-LDL levels', subtitle = 'n = 181')
 
 #opg and svcam1
 svcam1_opg <- glm(opg_pg_ml~ svcam1_ng_ml + age_at_diagnosis_years + 
@@ -338,7 +342,7 @@ ggplot(data = OriginalData, aes(svcam1_ng_ml, svcam1_opg$fitted.values)) +
   geom_point(color = 'black', shape = 20)+ 
   geom_smooth(method = glm, color = 'firebrick4', fill = 'indianred', alpha = 0.5) +
   labs(x = 'sVCAM1 levels [ng/mL]', y = 'OPG levels [pg/mL]', 
-       title = 'Plasma OPG levels in relation to sVCAM1 levels')
+       title = 'Plasma OPG levels in relation to sVCAM1 levels', subtitle = 'n = 181')
 
 #opg and ldh
 ldh_opg <- glm(opg_pg_ml~ ldh_u_l + age_at_diagnosis_years + 
@@ -351,7 +355,7 @@ ggplot(data = OriginalData, aes(ldh_u_l, ldh_opg$fitted.values)) +
   geom_point(color = 'black', shape = 20)+ 
   geom_smooth(method = glm, color = 'gold4', fill = 'goldenrod1', alpha = 0.5) +
   labs(x = 'LDH levels [U/L]', y = 'OPG levels [pg/mL]', 
-       title = 'Plasma OPG in relation to LDH levels')
+       title = 'Plasma OPG in relation to LDH levels', subtitle = 'n = 181')
 
 par(mfrow = c(2,2))
 plot(vwf_opg, which = c(2, 4), main = 'OPG vWF')
