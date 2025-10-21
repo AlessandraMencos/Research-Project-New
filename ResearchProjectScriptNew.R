@@ -14,7 +14,7 @@ OriginalData$sledai_score <- cut(OriginalData$sledai_score,
 OriginalData <- OriginalData %>% mutate(ethnicity = factor(ethnicity))
 OriginalData <- OriginalData %>% mutate(menopausal_status = factor(menopausal_status))
 
-par(bg = 'white',font.main = 4, cex.main = 1.5, cex.lab = 1.2, font.lab = 2, mfrow = c(1,1),
+par(bg = 'white',font.main = 4, cex.main = 1.5, cex.lab = 1.2, font.lab = 2, mfrow = c(1,2),
     font.sub = 3, cex.sub = 0.8)
 counts_sledai <- OriginalData %>% group_by(sledai_score) %>% reframe(count = n())
 coul_sledai <- c('pink', 'indianred', 'firebrick', 'firebrick4')
@@ -23,21 +23,6 @@ bars <- barplot(counts_sledai$count,
                 ylim = c(0, 90), main = 'SLEDAI 2k score patient counts', col = coul_sledai, 
                 xlab = 'SLEDAI category', ylab = 'Counts', sub = 'n = 181')
 text(x = bars, y = counts_sledai$count, labels = counts_sledai$count, pos = 3)
-counts_menopausal <- OriginalData %>% group_by(menopausal_status) %>% reframe(count = n())
-coul_menopausal <- c('seagreen', 'palegreen4')
-bars <- barplot(counts_menopausal$count, 
-                names.arg = counts_menopausal$menopausal_status, axis.lty = 1, 
-                ylim = c(0, 110), main = 'Menopausal Status counts', col = coul_menopausal, 
-                xlab = 'Menopausal Status', ylab = 'Counts', sub = 'n = 181')
-text(x = bars, y = counts_menopausal$count, labels = counts_menopausal$count, pos = 3)
-counts_ethnicity <- OriginalData %>% group_by(ethnicity) %>% reframe(count = n())
-coul_ethnicity <- c('lightskyblue', 'lightskyblue4')
-bars <- barplot(counts_ethnicity$count, 
-                names.arg = counts_ethnicity$ethnicity, axis.lty = 1, 
-                ylim = c(0, 180), main = 'Ethnicity Counts', col = coul_ethnicity,
-                xlab = 'Ethnicity', ylab = 'Counts', sub = 'n = 181')
-text(x = bars, y = counts_ethnicity$count, labels = counts_ethnicity$count, pos = 3)
-#now, percentages: 
 percentage_sledai <- ((counts_sledai$count/181)*100) %>% data.frame()
 bar_percent_sledai <- barplot(percentage_sledai$., ylim = c(0, 100), 
                               names.arg = counts_sledai$sledai_score, 
@@ -46,20 +31,34 @@ bar_percent_sledai <- barplot(percentage_sledai$., ylim = c(0, 100),
                               ylab = 'Percent (%)', sub = 'n = 181')
 text(x = bar_percent_sledai, y = percentage_sledai$., 
      labels = paste0(round(percentage_sledai$., 2), '%'), pos = 3)
+counts_menopausal <- OriginalData %>% group_by(menopausal_status) %>% reframe(count = n())
+coul_menopausal <- c('seagreen', 'palegreen4')
+bars <- barplot(counts_menopausal$count, 
+                names.arg = counts_menopausal$menopausal_status, axis.lty = 1, 
+                ylim = c(0, 110), main = 'Menopausal Status counts', col = coul_menopausal, 
+                xlab = 'Menopausal Status', ylab = 'Counts', sub = 'n = 181')
+text(x = bars, y = counts_menopausal$count, labels = counts_menopausal$count, pos = 3)
 percentage_menopause <- ((counts_menopausal$count/181)*100) %>% data.frame()
 bar_percent_menopause <- barplot(percentage_menopause$., ylim = c(0, 100), 
-                              names.arg = counts_menopausal$menopausal_status, 
-                              main = 'Percentage of patients in each group', axis.lty = 1, 
-                              col = coul_menopausal, xlab = 'Menopausal Status', 
-                              ylab = 'Percent (%)', sub = 'n = 181')
+                                 names.arg = counts_menopausal$menopausal_status, 
+                                 main = 'Percentage of patients in each group', axis.lty = 1, 
+                                 col = coul_menopausal, xlab = 'Menopausal Status', 
+                                 ylab = 'Percent (%)', sub = 'n = 181')
 text(x = bar_percent_menopause, y = percentage_menopause$., 
      labels = paste0(round(percentage_menopause$., 2), '%'), pos = 3)
+counts_ethnicity <- OriginalData %>% group_by(ethnicity) %>% reframe(count = n())
+coul_ethnicity <- c('lightskyblue', 'lightskyblue4')
+bars <- barplot(counts_ethnicity$count, 
+                names.arg = counts_ethnicity$ethnicity, axis.lty = 1, 
+                ylim = c(0, 180), main = 'Ethnicity Counts', col = coul_ethnicity,
+                xlab = 'Ethnicity', ylab = 'Counts', sub = 'n = 181')
+text(x = bars, y = counts_ethnicity$count, labels = counts_ethnicity$count, pos = 3)
 percentage_ethnicity <- ((counts_ethnicity$count/181)*100) %>% data.frame()
 bar_percent_ethnicity <- barplot(percentage_ethnicity$., ylim = c(0, 100), 
-                              names.arg = counts_ethnicity$ethnicity,
-                              main = 'Percentage of patients in each group', axis.lty = 1, 
-                              col = coul_ethnicity, xlab = 'Ethnicity', 
-                              ylab = 'Percent (%)', sub = 'n = 181')
+                                 names.arg = counts_ethnicity$ethnicity,
+                                 main = 'Percentage of patients in each group', axis.lty = 1, 
+                                 col = coul_ethnicity, xlab = 'Ethnicity', 
+                                 ylab = 'Percent (%)', sub = 'n = 181')
 text(x = bar_percent_ethnicity, y = percentage_ethnicity$., 
      labels = paste0(round(percentage_ethnicity$., 2), '%'), pos = 3)
 #Descriptive stats of continuous variables
@@ -97,15 +96,18 @@ vwf_discrete_sledai <- glm(vwf_iu_dl~sledai_score_discrete$OriginalData.sledai_s
                              age_at_diagnosis_years + time_since_diagnosis_years + 
                              bmi_kg_m2 +ifn_type1_iu_ml + menopausal_status, 
                            data = OriginalData)
-ggplot(data= OriginalData, aes(sledai_score, sledai_vwf[['fitted.values']])) +
+vwf <- ggplot(data= OriginalData, aes(sledai_score, sledai_vwf[['fitted.values']])) +
   theme(panel.background = element_rect(fill = 'aliceblue', colour = 'black'), 
         panel.grid.major = element_line(color = 'grey', linetype = 'dotted'), 
-        panel.grid.minor = element_line(color = 'grey', linetype = 'dashed')) +
+        panel.grid.minor = element_line(color = 'grey', linetype = 'dashed'), 
+        plot.title = element_text(face = 'bold.italic', size = 25),
+        plot.subtitle = element_text(face = 'italic', size = 17), 
+        axis.title = element_text(size = 15), axis.text = element_text(size = 15)) +
   geom_violin(trim = FALSE, alpha = 0.6, color = 'darkgreen', fill = 'seagreen') +
   geom_boxplot(alpha = 0.8, width = 0.2) +
   geom_jitter(color = 'black', position=position_jitter(0.16), alpha = 0.9) +
   labs(title = "vWF levels in relation to SLEDAI category", x = 'SLEDAI category', 
-       y = 'vWF levels [IU/dL]', subtitle = 'n = 181')
+       y = 'Arcsinh transformed vWF levels [IU/dL]', subtitle = 'n = 181')
 
 #sdc1
 sledai_sdc1 <- glm(sdc1_ng_ml~sledai_score + age_at_diagnosis_years + 
@@ -115,15 +117,18 @@ sdc1_discrete_sledai <- glm(sdc1_ng_ml~sledai_score_discrete$OriginalData.sledai
                               age_at_diagnosis_years + time_since_diagnosis_years + 
                               bmi_kg_m2 +ifn_type1_iu_ml + menopausal_status, 
                             data = OriginalData)
-ggplot(data= OriginalData, aes(sledai_score, sledai_sdc1[['fitted.values']])) +
+sdc1 <- ggplot(data= OriginalData, aes(sledai_score, sledai_sdc1[['fitted.values']])) +
   theme(panel.background = element_rect(fill = 'aliceblue', colour = 'black'), 
         panel.grid.major = element_line(color = 'grey', linetype = 'dotted'), 
-        panel.grid.minor = element_line(color = 'grey', linetype = 'dashed')) +
+        panel.grid.minor = element_line(color = 'grey', linetype = 'dashed'), 
+        plot.title = element_text(face = 'bold.italic', size = 25),
+        plot.subtitle = element_text(face = 'italic', size = 17), 
+        axis.title = element_text(size = 15), axis.text = element_text(size = 15)) +
   geom_violin(trim = FALSE, alpha = 0.6, color = 'blue', fill = 'skyblue') +
   geom_boxplot(alpha = 0.8, width = 0.2) +
   geom_jitter(color = 'black', position=position_jitter(0.16), alpha = 0.9) +
   labs(title = "SDC-1 levels in relation to SLEDAI category", x = 'SLEDAI category', 
-       y = 'SDC-1 levels [ng/mL]', subtitle = 'n = 181')
+       y = 'Log transformed SDC-1 levels [ng/mL]', subtitle = 'n = 181')
 
 #tm
 sledai_tm <- glm(tm_ng_ml~sledai_score +  age_at_diagnosis_years + 
@@ -133,15 +138,18 @@ tm_discrete_sledai <- glm(tm_ng_ml~sledai_score_discrete$OriginalData.sledai_sco
                               age_at_diagnosis_years + time_since_diagnosis_years + 
                               bmi_kg_m2 +ifn_type1_iu_ml + menopausal_status, 
                             data = OriginalData)
-ggplot(data= OriginalData, aes(sledai_score, sledai_tm[['fitted.values']])) +
+tm <- ggplot(data= OriginalData, aes(sledai_score, sledai_tm[['fitted.values']])) +
   theme(panel.background = element_rect(fill = 'aliceblue', colour = 'black'), 
         panel.grid.major = element_line(color = 'grey', linetype = 'dotted'), 
-        panel.grid.minor = element_line(color = 'grey', linetype = 'dashed')) +
+        panel.grid.minor = element_line(color = 'grey', linetype = 'dashed'), 
+        plot.title = element_text(face = 'bold.italic', size = 25),
+        plot.subtitle = element_text(face = 'italic', size = 17), 
+        axis.title = element_text(size = 15), axis.text = element_text(size = 15)) +
   geom_violin(trim = FALSE, alpha = 0.6, color = 'lemonchiffon4', fill = 'lemonchiffon3') +
   geom_boxplot(alpha = 0.8, width = 0.2) +
   geom_jitter(color = 'black', position=position_jitter(0.16), alpha = 0.9) +
   labs(title = "TM levels in relation to SLEDAI category", x = 'SLEDAI category', 
-       y = 'TM levels [ng/mL]', subtitle = 'n = 181')
+       y = 'Log transformed TM levels [ng/mL]', subtitle = 'n = 181')
 
 #oxLDL
 sledai_oxLDL <- glm(ox_ldl_ng_ml~sledai_score + age_at_diagnosis_years + 
@@ -151,10 +159,13 @@ oxldl_discrete_sledai <- glm(ox_ldl_ng_ml~sledai_score_discrete$OriginalData.sle
                               age_at_diagnosis_years + time_since_diagnosis_years + 
                               bmi_kg_m2 +ifn_type1_iu_ml + menopausal_status, 
                             data = OriginalData)
-ggplot(data= OriginalData, aes(sledai_score, sledai_oxLDL[['fitted.values']])) +
+oxldl <- ggplot(data= OriginalData, aes(sledai_score, sledai_oxLDL[['fitted.values']])) +
   theme(panel.background = element_rect(fill = 'aliceblue', colour = 'black'), 
         panel.grid.major = element_line(color = 'grey', linetype = 'dotted'), 
-        panel.grid.minor = element_line(color = 'grey', linetype = 'dashed')) +
+        panel.grid.minor = element_line(color = 'grey', linetype = 'dashed'), 
+        plot.title = element_text(face = 'bold.italic', size = 25),
+        plot.subtitle = element_text(face = 'italic', size = 17), 
+        axis.title = element_text(size = 15), axis.text = element_text(size = 15)) +
   geom_violin(trim = FALSE, alpha = 0.6, color = 'mediumpurple4', fill = 'lavender') +
   geom_boxplot(alpha = 0.8, width = 0.2) +
   geom_jitter(color = 'black', position=position_jitter(0.16), alpha = 0.9) +
@@ -169,15 +180,18 @@ svcam1_discrete_sledai <- glm(svcam1_ng_ml~sledai_score_discrete$OriginalData.sl
                               age_at_diagnosis_years + time_since_diagnosis_years + 
                               bmi_kg_m2 +ifn_type1_iu_ml + menopausal_status, 
                             data = OriginalData)
-ggplot(data= OriginalData, aes(sledai_score, sledai_VCAM1[['fitted.values']])) +
+svcam1 <- ggplot(data= OriginalData, aes(sledai_score, sledai_VCAM1[['fitted.values']])) +
   theme(panel.background = element_rect(fill = 'aliceblue', colour = 'black'), 
         panel.grid.major = element_line(color = 'grey', linetype = 'dotted'), 
-        panel.grid.minor = element_line(color = 'grey', linetype = 'dashed')) +
+        panel.grid.minor = element_line(color = 'grey', linetype = 'dashed'), 
+        plot.title = element_text(face = 'bold.italic', size = 25),
+        plot.subtitle = element_text(face = 'italic', size = 17), 
+        axis.title = element_text(size = 15), axis.text = element_text(size = 15)) +
   geom_violin(trim = FALSE, alpha = 0.6, color = 'indianred4', fill = 'indianred') +
   geom_boxplot(alpha = 0.8, width = 0.2) +
   geom_jitter(color = 'black', position=position_jitter(0.16), alpha = 0.9) +
   labs(title = "sVCAM1 levels in relation to SLEDAI category", x = 'SLEDAI category', 
-       y = 'sVCAM1 levels [ng/mL]', subtitle = 'n = 181')
+       y = 'Log transformed sVCAM1 levels [ng/mL]', subtitle = 'n = 181')
 
 #LDH
 sledai_LDH <- glm(ldh_u_l~sledai_score + age_at_diagnosis_years + 
@@ -187,15 +201,18 @@ ldh_discrete_sledai <- glm(ldh_u_l~sledai_score_discrete$OriginalData.sledai_sco
                               age_at_diagnosis_years + time_since_diagnosis_years + 
                               bmi_kg_m2 +ifn_type1_iu_ml + menopausal_status, 
                             data = OriginalData)
-ggplot(data= OriginalData, aes(sledai_score, sledai_LDH[['fitted.values']])) +
+ldh <- ggplot(data= OriginalData, aes(sledai_score, sledai_LDH[['fitted.values']])) +
   theme(panel.background = element_rect(fill = 'aliceblue', colour = 'black'), 
         panel.grid.major = element_line(color = 'grey', linetype = 'dotted'), 
-        panel.grid.minor = element_line(color = 'grey', linetype = 'dashed')) +
+        panel.grid.minor = element_line(color = 'grey', linetype = 'dashed'), 
+        plot.title = element_text(face = 'bold.italic', size = 25),
+        plot.subtitle = element_text(face = 'italic', size = 17), 
+        axis.title = element_text(size = 15), axis.text = element_text(size = 15)) +
   geom_violin(trim = FALSE, alpha = 0.6, color = 'goldenrod4', fill = 'goldenrod') +
   geom_boxplot(alpha = 0.8, width = 0.2) +
   geom_jitter(color = 'black', position=position_jitter(0.16), alpha = 0.9) +
   labs(title = "LDH levels in relation to SLEDAI category", x = 'SLEDAI category', 
-       y = 'LDH levels [U/L]', subtitle = 'n = 181')
+       y = 'Log transformed LDH levels [U/L]', subtitle = 'n = 181')
 
 par(mfrow = c(2,2))
 plot(sledai_vwf, which = c(2, 4), main = 'vWF vs SLEDAI')
@@ -211,16 +228,16 @@ plot(oxldl_discrete_sledai, which = c(2,4), main = 'ox-LDL vs Discrete SLEDAI')
 plot(sledai_LDH, which = c(2, 4), main = 'LDH vs SLEDAI')
 plot(ldh_discrete_sledai, which = c(2,4), main = 'LDH vs Discrete SLEDAI')
 
-res_biomarkers_sledai <- list(sledai_vwf, sledai_sdc1, sledai_tm, sledai_VCAM1, 
-                                  sledai_oxLDL, sledai_LDH)
+res_biomarkers_sledai <- list(sledai_vwf, sledai_sdc1, sledai_tm, sledai_oxLDL, 
+                              sledai_VCAM1, sledai_LDH)
 names(res_biomarkers_sledai) <- paste(biomarkers, 'vs SLEDAI categories')
 results_biomarkers_sledai_summaries <- lapply(res_biomarkers_sledai, function(model) {
   df_coef <- as.data.frame(summary(model)$coefficients)
   df_coef <- cbind(Term = rownames(df_coef), df_coef)
 })
-res_biomarkers_dscrtsledai <- list(vwf_discrete_sledai, sdc1_discrete_sledai, 
-                                       tm_discrete_sledai, svcam1_discrete_sledai, 
-                                       oxldl_discrete_sledai, ldh_discrete_sledai)
+res_biomarkers_dscrtsledai <- list(vwf_discrete_sledai, sdc1_discrete_sledai,
+                                   tm_discrete_sledai, oxldl_discrete_sledai, 
+                                   svcam1_discrete_sledai, ldh_discrete_sledai)
 names(res_biomarkers_dscrtsledai) <- paste(biomarkers, 'vs discrete SLEDAI')
 results_biomarkers_dscrtsledai_summaries <- lapply(res_biomarkers_dscrtsledai, function(model) {
   df_coef <- as.data.frame(summary(model)$coefficients)
@@ -255,7 +272,10 @@ opg_discrete_sledai <- glm(opg_pg_ml~sledai_score_discrete$OriginalData.sledai_s
 ggplot(data= OriginalData, aes(sledai_score, sledai_opg[['fitted.values']])) +
   theme(panel.background = element_rect(fill = 'aliceblue', colour = 'black'), 
         panel.grid.major = element_line(color = 'grey', linetype = 'dotted'), 
-        panel.grid.minor = element_line(color = 'grey', linetype = 'dashed')) +
+        panel.grid.minor = element_line(color = 'grey', linetype = 'dashed'), 
+        plot.title = element_text(face = 'bold.italic', size = 25),
+        plot.subtitle = element_text(face = 'italic', size = 17), 
+        axis.title = element_text(size = 15), axis.text = element_text(size = 15)) +
   geom_violin(trim = FALSE, alpha = 0.6, color = 'chocolate4', fill = 'chocolate') +
   geom_boxplot(alpha = 0.8, width = 0.2) +
   geom_jitter(color = 'black', position=position_jitter(0.16), alpha = 0.9) +
@@ -284,10 +304,13 @@ par(mfrow = c(1,1))
 vwf_opg <- glm(opg_pg_ml~ vwf_iu_dl + age_at_diagnosis_years + 
                  time_since_diagnosis_years + bmi_kg_m2 + 
                  ifn_type1_iu_ml + menopausal_status, data = OriginalData)
-ggplot(data = OriginalData, aes(vwf_iu_dl, vwf_opg$fitted.values)) +
+vwf <- ggplot(data = OriginalData, aes(vwf_iu_dl, vwf_opg$fitted.values)) +
   theme(panel.background = element_rect(fill = 'aliceblue', colour = 'black'), 
         panel.grid.major = element_line(color = 'grey', linetype = 'dotted'), 
-        panel.grid.minor = element_line(color = 'grey', linetype = 'dashed')) +
+        panel.grid.minor = element_line(color = 'grey', linetype = 'dashed'), 
+        plot.title = element_text(face = 'bold.italic', size = 25),
+        plot.subtitle = element_text(face = 'italic', size = 17), 
+        axis.title = element_text(size = 15), axis.text = element_text(size = 15)) +
   geom_point(color = 'black', shape = 20)+ 
   geom_smooth(method = glm, color = 'darkolivegreen', fill = 'darkolivegreen2', alpha = 0.5) +
   labs(x = 'vWF levels [IU/dL]', y = 'OPG levels [pg/mL]', 
@@ -297,10 +320,13 @@ ggplot(data = OriginalData, aes(vwf_iu_dl, vwf_opg$fitted.values)) +
 sdc1_opg <- glm(opg_pg_ml~ sdc1_ng_ml + age_at_diagnosis_years + 
                   time_since_diagnosis_years + bmi_kg_m2 + 
                   ifn_type1_iu_ml + menopausal_status, data = OriginalData)
-ggplot(data = OriginalData, aes(sdc1_ng_ml, sdc1_opg$fitted.values)) +
+sdc1 <- ggplot(data = OriginalData, aes(sdc1_ng_ml, sdc1_opg$fitted.values)) +
   theme(panel.background = element_rect(fill = 'aliceblue', colour = 'black'), 
         panel.grid.major = element_line(color = 'grey', linetype = 'dotted'), 
-        panel.grid.minor = element_line(color = 'grey', linetype = 'dashed')) +
+        panel.grid.minor = element_line(color = 'grey', linetype = 'dashed'), 
+        plot.title = element_text(face = 'bold.italic', size = 25),
+        plot.subtitle = element_text(face = 'italic', size = 17), 
+        axis.title = element_text(size = 15), axis.text = element_text(size = 15)) +
   geom_point(color = 'black', shape = 20)+ 
   geom_smooth(method = glm, color = 'navyblue', fill = 'cornflowerblue', alpha = 0.5) +
   labs(x = 'SDC-1 levels [ng/mL]', y = 'OPG levels [pg/mL]', 
@@ -310,10 +336,13 @@ ggplot(data = OriginalData, aes(sdc1_ng_ml, sdc1_opg$fitted.values)) +
 tm_opg <- glm(opg_pg_ml~ tm_ng_ml + age_at_diagnosis_years + 
                 time_since_diagnosis_years + bmi_kg_m2 + 
                 ifn_type1_iu_ml + menopausal_status, data = OriginalData)
-ggplot(data = OriginalData, aes(tm_ng_ml, tm_opg$fitted.values)) +
+tm <- ggplot(data = OriginalData, aes(tm_ng_ml, tm_opg$fitted.values)) +
   theme(panel.background = element_rect(fill = 'aliceblue', colour = 'black'), 
         panel.grid.major = element_line(color = 'grey', linetype = 'dotted'), 
-        panel.grid.minor = element_line(color = 'grey', linetype = 'dashed')) +
+        panel.grid.minor = element_line(color = 'grey', linetype = 'dashed'), 
+        plot.title = element_text(face = 'bold.italic', size = 25),
+        plot.subtitle = element_text(face = 'italic', size = 17), 
+        axis.title = element_text(size = 15), axis.text = element_text(size = 15)) +
   geom_point(color = 'black', shape = 20)+ 
   geom_smooth(method = glm, color = 'bisque3', fill = 'bisque', alpha = 0.5) +
   labs(x = 'TM levels [ng/mL]', y = 'OPG levels [pg/mL]', 
@@ -322,10 +351,13 @@ ggplot(data = OriginalData, aes(tm_ng_ml, tm_opg$fitted.values)) +
 oxldl_opg <- glm(opg_pg_ml~ ox_ldl_ng_ml + age_at_diagnosis_years + 
                    time_since_diagnosis_years + bmi_kg_m2 + 
                    ifn_type1_iu_ml + menopausal_status, data = OriginalData)
-ggplot(data = OriginalData, aes(ox_ldl_ng_ml, oxldl_opg$fitted.values)) +
+oxldl <- ggplot(data = OriginalData, aes(ox_ldl_ng_ml, oxldl_opg$fitted.values)) +
   theme(panel.background = element_rect(fill = 'aliceblue', colour = 'black'), 
         panel.grid.major = element_line(color = 'grey', linetype = 'dotted'), 
-        panel.grid.minor = element_line(color = 'grey', linetype = 'dashed')) +
+        panel.grid.minor = element_line(color = 'grey', linetype = 'dashed'), 
+        plot.title = element_text(face = 'bold.italic', size = 25),
+        plot.subtitle = element_text(face = 'italic', size = 17), 
+        axis.title = element_text(size = 15), axis.text = element_text(size = 15)) +
   geom_point(color = 'black', shape = 20)+ 
   geom_smooth(method = glm, color = 'orchid4', fill = 'plum', alpha = 0.5) +
   labs(x = 'ox-LDL levels [ng/mL]', y = 'OPG levels [pg/mL]', 
@@ -335,10 +367,13 @@ ggplot(data = OriginalData, aes(ox_ldl_ng_ml, oxldl_opg$fitted.values)) +
 svcam1_opg <- glm(opg_pg_ml~ svcam1_ng_ml + age_at_diagnosis_years + 
                     time_since_diagnosis_years + bmi_kg_m2 + 
                     ifn_type1_iu_ml + menopausal_status, data = OriginalData)
-ggplot(data = OriginalData, aes(svcam1_ng_ml, svcam1_opg$fitted.values)) +
+svcam1 <- ggplot(data = OriginalData, aes(svcam1_ng_ml, svcam1_opg$fitted.values)) +
   theme(panel.background = element_rect(fill = 'aliceblue', colour = 'black'), 
         panel.grid.major = element_line(color = 'grey', linetype = 'dotted'), 
-        panel.grid.minor = element_line(color = 'grey', linetype = 'dashed')) +
+        panel.grid.minor = element_line(color = 'grey', linetype = 'dashed'), 
+        plot.title = element_text(face = 'bold.italic', size = 25),
+        plot.subtitle = element_text(face = 'italic', size = 17), 
+        axis.title = element_text(size = 15), axis.text = element_text(size = 15)) +
   geom_point(color = 'black', shape = 20)+ 
   geom_smooth(method = glm, color = 'firebrick4', fill = 'indianred', alpha = 0.5) +
   labs(x = 'sVCAM1 levels [ng/mL]', y = 'OPG levels [pg/mL]', 
@@ -348,10 +383,13 @@ ggplot(data = OriginalData, aes(svcam1_ng_ml, svcam1_opg$fitted.values)) +
 ldh_opg <- glm(opg_pg_ml~ ldh_u_l + age_at_diagnosis_years + 
                  time_since_diagnosis_years  + bmi_kg_m2 + 
                  ifn_type1_iu_ml + menopausal_status, data = OriginalData)
-ggplot(data = OriginalData, aes(ldh_u_l, ldh_opg$fitted.values)) +
+ldh <- ggplot(data = OriginalData, aes(ldh_u_l, ldh_opg$fitted.values)) +
   theme(panel.background = element_rect(fill = 'aliceblue', colour = 'black'), 
         panel.grid.major = element_line(color = 'grey', linetype = 'dotted'), 
-        panel.grid.minor = element_line(color = 'grey', linetype = 'dashed')) +
+        panel.grid.minor = element_line(color = 'grey', linetype = 'dashed'), 
+        plot.title = element_text(face = 'bold.italic', size = 25),
+        plot.subtitle = element_text(face = 'italic', size = 17), 
+        axis.title = element_text(size = 15), axis.text = element_text(size = 15)) +
   geom_point(color = 'black', shape = 20)+ 
   geom_smooth(method = glm, color = 'gold4', fill = 'goldenrod1', alpha = 0.5) +
   labs(x = 'LDH levels [U/L]', y = 'OPG levels [pg/mL]', 
